@@ -1,5 +1,6 @@
 using CodexMultipleAccounts.Core.Profiles;
 using CodexMultipleAccounts.Core.Storage;
+using Xunit;
 
 namespace CodexMultipleAccounts.Core.Tests;
 
