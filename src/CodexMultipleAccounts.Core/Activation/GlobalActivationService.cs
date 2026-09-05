@@ -48,6 +48,31 @@ public sealed class GlobalActivationService
         return new GlobalActivationResult(hadPrevious, hadPrevious ? backup : null);
     }
 
+    public async Task RollbackActivationAsync(
+        string defaultCodexHome,
+        GlobalActivationResult activation,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(defaultCodexHome);
+        ArgumentNullException.ThrowIfNull(activation);
+
+        if (activation.HadPreviousDefault)
+        {
+            if (string.IsNullOrWhiteSpace(activation.BackupDirectory))
+                throw new InvalidOperationException("Activation reports a previous default home but no backup directory.");
+
+            await RestoreBackupAsync(defaultCodexHome, activation.BackupDirectory, cancellationToken);
+            return;
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        var defaultFull = Path.GetFullPath(defaultCodexHome);
+        var parent = Path.GetDirectoryName(defaultFull)
+            ?? throw new InvalidOperationException("Default Codex home must have a parent directory.");
+        if (Directory.Exists(defaultFull))
+            await SafeFileTree.DeleteManagedDirectoryAsync(defaultFull, parent, cancellationToken);
+    }
+
     public async Task RestoreBackupAsync(
         string defaultCodexHome,
         string backupDirectory,
