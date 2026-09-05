@@ -23,7 +23,7 @@ public sealed class ProfileGlobalStateTests : IDisposable
         var profiles = await reloaded.ListAsync();
         Assert.False(profiles.Single(profile => profile.Id == personal.Id).IsGloballyActive);
         Assert.True(profiles.Single(profile => profile.Id == work.Id).IsGloballyActive);
-        Assert.Single(profiles.Where(profile => profile.IsGloballyActive));
+        Assert.Single(profiles, profile => profile.IsGloballyActive);
     }
 
     public void Dispose()
