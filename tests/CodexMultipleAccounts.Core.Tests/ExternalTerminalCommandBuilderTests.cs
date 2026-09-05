@@ -17,9 +17,9 @@ public sealed class ExternalTerminalCommandBuilderTests
         var command = ExternalTerminalCommandBuilder.Build(Spec, TerminalPlatform.Windows);
 
         Assert.Equal("wt.exe", command.FileName);
-        Assert.Contains("CODEX_HOME", command.Arguments);
-        Assert.Contains(Spec.Environment["CODEX_HOME"], command.Arguments);
-        Assert.Contains("codex", command.Arguments);
+        Assert.Contains(command.Arguments, argument => argument.Contains("CODEX_HOME", StringComparison.Ordinal));
+        Assert.Contains(command.Arguments, argument => argument.Contains(Spec.Environment["CODEX_HOME"], StringComparison.Ordinal));
+        Assert.Contains(command.Arguments, argument => argument.Contains("codex", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -39,8 +39,8 @@ public sealed class ExternalTerminalCommandBuilderTests
         var command = ExternalTerminalCommandBuilder.Build(Spec, TerminalPlatform.MacOS);
 
         Assert.Equal("osascript", command.FileName);
-        Assert.Contains("Terminal", command.Arguments);
-        Assert.Contains("CODEX_HOME", command.Arguments);
-        Assert.Contains("codex", command.Arguments);
+        Assert.Contains(command.Arguments, argument => argument.Contains("Terminal", StringComparison.Ordinal));
+        Assert.Contains(command.Arguments, argument => argument.Contains("CODEX_HOME", StringComparison.Ordinal));
+        Assert.Contains(command.Arguments, argument => argument.Contains("codex", StringComparison.Ordinal));
     }
 }
