@@ -23,14 +23,44 @@ public sealed class ProfileService
         await _gate.WaitAsync(cancellationToken);
         try
         {
-            var profiles = (await _store.LoadAsync(cancellationToken)).ToList();
-            var id = Guid.NewGuid();
-            var home = _paths.GetCodexHome(id);
-            Directory.CreateDirectory(home);
-            var profile = new CodexProfile(id, name.Trim(), home);
-            profiles.Add(profile);
-            await _store.SaveAsync(profiles, cancellationToken);
+            return await CreateCoreAsync(name.Trim(), cancellationToken);
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    public async Task<CodexProfile> ImportDefaultAsync(
+        string name,
+        string defaultCodexHome,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        ArgumentException.ThrowIfNullOrWhiteSpace(defaultCodexHome);
+        if (!Directory.Exists(defaultCodexHome))
+            throw new DirectoryNotFoundException($"Default Codex home '{defaultCodexHome}' does not exist.");
+
+        await _gate.WaitAsync(cancellationToken);
+        CodexProfile? profile = null;
+        try
+        {
+            profile = await CreateCoreAsync(name.Trim(), cancellationToken);
+            await SafeFileTree.CopyDirectoryAsync(defaultCodexHome, profile.CodexHome, cancellationToken);
             return profile;
+        }
+        catch
+        {
+            if (profile is not null)
+            {
+                var profiles = (await _store.LoadAsync(CancellationToken.None)).Where(item => item.Id != profile.Id).ToList();
+                var profileDirectory = _paths.GetProfileDirectory(profile.Id);
+                if (Directory.Exists(profileDirectory))
+                    await SafeFileTree.DeleteManagedDirectoryAsync(profileDirectory, _paths.ProfilesDirectory, CancellationToken.None);
+                await _store.SaveAsync(profiles, CancellationToken.None);
+            }
+
+            throw;
         }
         finally
         {
@@ -70,9 +100,8 @@ public sealed class ProfileService
                 ?? throw new KeyNotFoundException($"Profile '{id}' was not found.");
 
             var profileDirectory = _paths.GetProfileDirectory(profile.Id);
-            EnsureManagedProfileDirectory(profileDirectory);
             if (Directory.Exists(profileDirectory))
-                Directory.Delete(profileDirectory, recursive: true);
+                await SafeFileTree.DeleteManagedDirectoryAsync(profileDirectory, _paths.ProfilesDirectory, cancellationToken);
 
             profiles.Remove(profile);
             await _store.SaveAsync(profiles, cancellationToken);
@@ -83,12 +112,15 @@ public sealed class ProfileService
         }
     }
 
-    private void EnsureManagedProfileDirectory(string directory)
+    private async Task<CodexProfile> CreateCoreAsync(string name, CancellationToken cancellationToken)
     {
-        var root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(_paths.ProfilesDirectory));
-        var target = Path.TrimEndingDirectorySeparator(Path.GetFullPath(directory));
-        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
-        if (!target.StartsWith(root + Path.DirectorySeparatorChar, comparison))
-            throw new InvalidOperationException("Refusing to delete a directory outside the managed profiles root.");
+        var profiles = (await _store.LoadAsync(cancellationToken)).ToList();
+        var id = Guid.NewGuid();
+        var home = _paths.GetCodexHome(id);
+        Directory.CreateDirectory(home);
+        var profile = new CodexProfile(id, name, home);
+        profiles.Add(profile);
+        await _store.SaveAsync(profiles, cancellationToken);
+        return profile;
     }
 }
