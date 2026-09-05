@@ -90,6 +90,26 @@ public sealed class ProfileService
         }
     }
 
+    public async Task SetGloballyActiveAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        await _gate.WaitAsync(cancellationToken);
+        try
+        {
+            var profiles = (await _store.LoadAsync(cancellationToken)).ToList();
+            if (!profiles.Any(profile => profile.Id == id))
+                throw new KeyNotFoundException($"Profile '{id}' was not found.");
+
+            for (var index = 0; index < profiles.Count; index++)
+                profiles[index] = profiles[index] with { IsGloballyActive = profiles[index].Id == id };
+
+            await _store.SaveAsync(profiles, cancellationToken);
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
         await _gate.WaitAsync(cancellationToken);
