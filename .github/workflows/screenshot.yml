@@ -3,19 +3,20 @@ name: App Screenshot
 on:
   workflow_dispatch:
   push:
-    branches: [main]
     paths:
       - 'src/CodexMultipleAccounts.App/**'
       - '.github/workflows/screenshot.yml'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   screenshot:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
@@ -56,12 +57,22 @@ jobs:
           $bitmap = New-Object System.Drawing.Bitmap $width, $height
           $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
           $graphics.CopyFromScreen($rect.Left, $rect.Top, 0, 0, $bitmap.Size)
-          New-Item -ItemType Directory -Force artifacts | Out-Null
-          $bitmap.Save((Join-Path $PWD 'artifacts/app-screenshot.png'), [System.Drawing.Imaging.ImageFormat]::Png)
+          New-Item -ItemType Directory -Force docs/assets | Out-Null
+          $bitmap.Save((Join-Path $PWD 'docs/assets/app-screenshot.png'), [System.Drawing.Imaging.ImageFormat]::Png)
           $graphics.Dispose()
           $bitmap.Dispose()
           Stop-Process -Id $pidValue -Force -ErrorAction SilentlyContinue
       - uses: actions/upload-artifact@v4
         with:
           name: codex-multiple-accounts-screenshot
-          path: artifacts/app-screenshot.png
+          path: docs/assets/app-screenshot.png
+      - name: Commit refreshed screenshot
+        shell: pwsh
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add docs/assets/app-screenshot.png
+          if (-not (git diff --cached --quiet)) {
+            git commit -m "docs: refresh app screenshot"
+            git push
+          }
