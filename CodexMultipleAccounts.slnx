@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="src/CodexMultipleAccounts.Core/CodexMultipleAccounts.Core.csproj" />
+  <Project Path="tests/CodexMultipleAccounts.Core.Tests/CodexMultipleAccounts.Core.Tests.csproj" />
+</Solution>

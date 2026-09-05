@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>CodexMultipleAccounts.Core</AssemblyName>
+    <RootNamespace>CodexMultipleAccounts.Core</RootNamespace>
+  </PropertyGroup>
+</Project>
