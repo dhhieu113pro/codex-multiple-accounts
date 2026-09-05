@@ -1,0 +1,67 @@
+name: App Screenshot
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'src/CodexMultipleAccounts.App/**'
+      - '.github/workflows/screenshot.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  screenshot:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Build app
+        run: dotnet build src/CodexMultipleAccounts.App/CodexMultipleAccounts.App.csproj -c Release
+      - name: Launch demo window
+        shell: pwsh
+        env:
+          CODEX_MULTIPLE_ACCOUNTS_SCREENSHOT: '1'
+        run: |
+          $exe = Get-ChildItem -Path src/CodexMultipleAccounts.App/bin/Release -Filter CodexMultipleAccounts.App.exe -Recurse | Select-Object -First 1
+          if (-not $exe) { throw 'App executable not found.' }
+          $process = Start-Process $exe.FullName -PassThru
+          Set-Content screenshot-process-id.txt $process.Id
+          Start-Sleep -Seconds 5
+      - name: Capture app window
+        shell: pwsh
+        run: |
+          Add-Type -AssemblyName System.Drawing
+          Add-Type @'
+          using System;
+          using System.Runtime.InteropServices;
+          public static class NativeScreenshot {
+              [StructLayout(LayoutKind.Sequential)] public struct RECT { public int Left, Top, Right, Bottom; }
+              [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr hWnd, out RECT rect);
+          }
+          '@
+          $pidValue = [int](Get-Content screenshot-process-id.txt)
+          $process = Get-Process -Id $pidValue
+          $process.WaitForInputIdle(10000) | Out-Null
+          $process.Refresh()
+          $handle = $process.MainWindowHandle
+          if ($handle -eq [IntPtr]::Zero) { throw 'App did not expose a main window.' }
+          $rect = New-Object NativeScreenshot+RECT
+          if (-not [NativeScreenshot]::GetWindowRect($handle, [ref]$rect)) { throw 'Could not read app window bounds.' }
+          $width = $rect.Right - $rect.Left
+          $height = $rect.Bottom - $rect.Top
+          $bitmap = New-Object System.Drawing.Bitmap $width, $height
+          $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
+          $graphics.CopyFromScreen($rect.Left, $rect.Top, 0, 0, $bitmap.Size)
+          New-Item -ItemType Directory -Force artifacts | Out-Null
+          $bitmap.Save((Join-Path $PWD 'artifacts/app-screenshot.png'), [System.Drawing.Imaging.ImageFormat]::Png)
+          $graphics.Dispose()
+          $bitmap.Dispose()
+          Stop-Process -Id $pidValue -Force -ErrorAction SilentlyContinue
+      - uses: actions/upload-artifact@v4
+        with:
+          name: codex-multiple-accounts-screenshot
+          path: artifacts/app-screenshot.png
