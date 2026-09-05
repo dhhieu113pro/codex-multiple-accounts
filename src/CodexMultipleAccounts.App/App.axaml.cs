@@ -22,7 +22,7 @@ public sealed class App : Application
             var paths = new AppPaths(runtimePaths.AppDataRoot);
             var profileService = new ProfileService(paths, new ProfileStore(paths));
             var launchService = new CodexLaunchService();
-            var activationService = new GlobalActivationService();
+            var activationService = new GlobalActivationService(profileService);
             var externalLauncher = new ExternalTerminalLauncher();
             var viewModel = new MainWindowViewModel(
                 profileService,
