@@ -1,0 +1,58 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>CodexMultipleAccounts</AssemblyName>
+    <RootNamespace>CodexMultipleAccounts.App</RootNamespace>
+    <Nullable>enable</Nullable>
+    <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Product>Codex Multiple Accounts</Product>
+    <Description>Run multiple Codex CLI accounts in parallel with isolated CODEX_HOME profiles.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/dhhieu113pro/codex-multiple-accounts</RepositoryUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../CodexMultipleAccounts.Core/CodexMultipleAccounts.Core.csproj" />
+    <PackageReference Include="Avalonia" Version="11.3.20" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.20" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.20" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.20" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="Porta.Pty" Version="1.0.7" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+    <PackageDownload Include="CI.Microsoft.Terminal.Wpf" Version="[1.25.260303002]" />
+  </ItemGroup>
+
+  <Target Name="StageWindowsTerminalNativeForDevelopment"
+          AfterTargets="Build"
+          Condition="$([MSBuild]::IsOSPlatform('Windows')) And '$(RuntimeIdentifier)' == ''">
+    <PropertyGroup>
+      <WindowsTerminalPackageRoot>$(NuGetPackageRoot)ci.microsoft.terminal.wpf\1.25.260303002</WindowsTerminalPackageRoot>
+    </PropertyGroup>
+    <MakeDir Directories="$(TargetDir)native-terminal\win-x64;$(TargetDir)native-terminal\win-arm64" />
+    <Copy SourceFiles="$(WindowsTerminalPackageRoot)\runtimes\win-x64\native\Microsoft.Terminal.Control.dll"
+          DestinationFolder="$(TargetDir)native-terminal\win-x64"
+          SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(WindowsTerminalPackageRoot)\runtimes\win-arm64\native\Microsoft.Terminal.Control.dll"
+          DestinationFolder="$(TargetDir)native-terminal\win-arm64"
+          SkipUnchangedFiles="true" />
+  </Target>
+
+  <Target Name="StageWindowsTerminalNativeForPublish"
+          AfterTargets="Publish"
+          Condition="$([MSBuild]::IsOSPlatform('Windows')) And ('$(RuntimeIdentifier)' == 'win-x64' Or '$(RuntimeIdentifier)' == 'win-arm64')">
+    <PropertyGroup>
+      <WindowsTerminalPackageRoot>$(NuGetPackageRoot)ci.microsoft.terminal.wpf\1.25.260303002</WindowsTerminalPackageRoot>
+      <WindowsTerminalNativeSource>$(WindowsTerminalPackageRoot)\runtimes\$(RuntimeIdentifier)\native\Microsoft.Terminal.Control.dll</WindowsTerminalNativeSource>
+      <WindowsTerminalNativeDestination>$(PublishDir)native-terminal\$(RuntimeIdentifier)</WindowsTerminalNativeDestination>
+    </PropertyGroup>
+    <MakeDir Directories="$(WindowsTerminalNativeDestination)" />
+    <Copy SourceFiles="$(WindowsTerminalNativeSource)"
+          DestinationFolder="$(WindowsTerminalNativeDestination)"
+          SkipUnchangedFiles="true" />
+  </Target>
+</Project>
