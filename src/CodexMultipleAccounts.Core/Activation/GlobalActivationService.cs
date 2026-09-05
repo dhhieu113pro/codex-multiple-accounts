@@ -3,8 +3,10 @@ using CodexMultipleAccounts.Core.Storage;
 
 namespace CodexMultipleAccounts.Core.Activation;
 
-public sealed class GlobalActivationService
+public sealed class GlobalActivationService(ProfileService? profiles = null)
 {
+    private readonly ProfileService? _profiles = profiles;
+
     public async Task<GlobalActivationResult> ActivateAsync(
         CodexProfile profile,
         string defaultCodexHome,
@@ -24,6 +26,7 @@ public sealed class GlobalActivationService
         var staging = defaultFull + ".cma-staging-" + suffix;
         var backup = defaultFull + ".cma-backup-" + suffix;
         var hadPrevious = Directory.Exists(defaultFull);
+        var promoted = false;
 
         await SafeFileTree.CopyDirectoryAsync(profile.CodexHome, staging, cancellationToken);
 
@@ -33,13 +36,20 @@ public sealed class GlobalActivationService
                 Directory.Move(defaultFull, backup);
 
             Directory.Move(staging, defaultFull);
+            promoted = true;
+
+            if (_profiles is not null)
+                await _profiles.SetGloballyActiveAsync(profile.Id, cancellationToken);
         }
         catch
         {
             if (Directory.Exists(staging))
                 await SafeFileTree.DeleteManagedDirectoryAsync(staging, parent, CancellationToken.None);
 
-            if (hadPrevious && !Directory.Exists(defaultFull) && Directory.Exists(backup))
+            if (promoted && Directory.Exists(defaultFull))
+                await SafeFileTree.DeleteManagedDirectoryAsync(defaultFull, parent, CancellationToken.None);
+
+            if (hadPrevious && Directory.Exists(backup) && !Directory.Exists(defaultFull))
                 Directory.Move(backup, defaultFull);
 
             throw;
