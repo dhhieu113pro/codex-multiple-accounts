@@ -29,6 +29,26 @@ public sealed class ProfileAndLaunchTests
     }
 
     [Fact]
+    public async Task ImportDefaultAsync_RemovesPartialProfile_WhenCopyFails()
+    {
+        using var temp = new TempDirectory();
+        var defaultHome = Path.Combine(temp.Path, "default-codex");
+        Directory.CreateDirectory(defaultHome);
+        var profilesRoot = Path.Combine(temp.Path, "profiles");
+        var service = new ProfileService(temp.Path, defaultHome, (_, target) =>
+        {
+            Directory.CreateDirectory(target);
+            File.WriteAllText(Path.Combine(target, "partial.txt"), "partial");
+            throw new IOException("simulated copy failure");
+        });
+
+        await Assert.ThrowsAsync<IOException>(() => service.ImportDefaultAsync("Broken"));
+
+        Assert.Empty(await service.ListAsync());
+        Assert.Empty(Directory.EnumerateDirectories(profilesRoot));
+    }
+
+    [Fact]
     public async Task LaunchSpec_UsesChildOnlyCodexHome()
     {
         using var temp = new TempDirectory();
