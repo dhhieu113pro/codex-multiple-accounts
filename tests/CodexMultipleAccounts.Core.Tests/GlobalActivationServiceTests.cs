@@ -1,5 +1,6 @@
 using CodexMultipleAccounts.Core.Activation;
 using CodexMultipleAccounts.Core.Profiles;
+using CodexMultipleAccounts.Core.Storage;
 using Xunit;
 
 namespace CodexMultipleAccounts.Core.Tests;
@@ -54,6 +55,27 @@ public sealed class GlobalActivationServiceTests : IDisposable
         var service = new GlobalActivationService();
 
         await Assert.ThrowsAsync<DirectoryNotFoundException>(() => service.ActivateAsync(missingProfile, defaultHome));
+
+        Assert.Equal("original", await File.ReadAllTextAsync(Path.Combine(defaultHome, "state.txt")));
+    }
+
+    [Fact]
+    public async Task Metadata_failure_after_promotion_restores_previous_default()
+    {
+        var defaultHome = Path.Combine(_root, ".codex");
+        Directory.CreateDirectory(defaultHome);
+        await File.WriteAllTextAsync(Path.Combine(defaultHome, "state.txt"), "original");
+
+        var paths = new AppPaths(Path.Combine(_root, "manager"));
+        var profiles = new ProfileService(paths, new ProfileStore(paths));
+        var profile = await profiles.CreateAsync("Work");
+        await File.WriteAllTextAsync(Path.Combine(profile.CodexHome, "state.txt"), "selected");
+
+        File.Delete(paths.ProfilesFile);
+        Directory.CreateDirectory(paths.ProfilesFile);
+        var service = new GlobalActivationService(profiles);
+
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => service.ActivateAsync(profile, defaultHome));
 
         Assert.Equal("original", await File.ReadAllTextAsync(Path.Combine(defaultHome, "state.txt")));
     }
