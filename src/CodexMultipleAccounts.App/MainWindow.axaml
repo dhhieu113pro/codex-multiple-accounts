@@ -5,209 +5,393 @@
         x:Name="RootWindow"
         Width="1460"
         Height="880"
-        MinWidth="1050"
-        MinHeight="680"
+        MinWidth="760"
+        MinHeight="620"
         Title="Codex Multiple Accounts">
-  <Grid ColumnDefinitions="150,430,*">
+  <Grid x:Name="RootShellGrid" ColumnDefinitions="156,*">
     <Border Grid.Column="0"
             Background="{DynamicResource SidebarBrush}"
             BorderBrush="{DynamicResource BorderBrush}"
             BorderThickness="0,0,1,0"
-            Padding="12">
+            Padding="10">
       <DockPanel LastChildFill="True">
-        <StackPanel DockPanel.Dock="Top" Spacing="8">
-          <StackPanel Orientation="Horizontal" Spacing="9" Margin="4,4,4,16">
-            <Border Width="28" Height="28" CornerRadius="8" Background="#6C3BF5">
-              <TextBlock Text="C" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" Foreground="White"/>
+        <StackPanel DockPanel.Dock="Top" Spacing="6">
+          <StackPanel Orientation="Horizontal" Spacing="10" Margin="3,4,3,17">
+            <Border Width="30" Height="30" CornerRadius="9" Background="#6C3BF5">
+              <TextBlock Text="C"
+                         HorizontalAlignment="Center"
+                         VerticalAlignment="Center"
+                         FontWeight="Bold"
+                         Foreground="White"/>
             </Border>
-            <TextBlock Text="Accounts" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="15"/>
+            <StackPanel x:Name="BrandText" VerticalAlignment="Center" Spacing="0">
+              <TextBlock Text="Codex" FontWeight="SemiBold" FontSize="14"/>
+              <TextBlock Text="Accounts" Classes="muted" FontSize="10"/>
+            </StackPanel>
           </StackPanel>
 
-          <Button Classes="nav active" Content="♙  Accounts"/>
-          <Button Classes="nav" Content="▣  Sessions" IsEnabled="False"/>
-          <Button Classes="nav" Content="▥  Usage" IsEnabled="False"/>
-          <Button Classes="nav" Content="⚙  Settings" IsEnabled="False"/>
+          <Button Classes="nav active">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+              <TextBlock Text="◉" Width="18" TextAlignment="Center"/>
+              <TextBlock x:Name="NavAccountsText" Text="Accounts" VerticalAlignment="Center"/>
+            </StackPanel>
+          </Button>
+          <Button Classes="nav" IsEnabled="False">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+              <TextBlock Text="▣" Width="18" TextAlignment="Center"/>
+              <TextBlock x:Name="NavSessionsText" Text="Sessions" VerticalAlignment="Center"/>
+            </StackPanel>
+          </Button>
+          <Button Classes="nav" IsEnabled="False">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+              <TextBlock Text="▥" Width="18" TextAlignment="Center"/>
+              <TextBlock x:Name="NavUsageText" Text="Usage" VerticalAlignment="Center"/>
+            </StackPanel>
+          </Button>
+          <Button Classes="nav" IsEnabled="False">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+              <TextBlock Text="⚙" Width="18" TextAlignment="Center"/>
+              <TextBlock x:Name="NavSettingsText" Text="Settings" VerticalAlignment="Center"/>
+            </StackPanel>
+          </Button>
         </StackPanel>
 
-        <StackPanel DockPanel.Dock="Bottom" Spacing="6" Margin="0,12,0,4">
-          <Button Classes="nav" Content="▤  Documentation" IsEnabled="False"/>
-          <Button Classes="nav" Content="ⓘ  About" IsEnabled="False"/>
+        <StackPanel DockPanel.Dock="Bottom" Spacing="4" Margin="0,12,0,2">
+          <Button Classes="nav" IsEnabled="False">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+              <TextBlock Text="▤" Width="18" TextAlignment="Center"/>
+              <TextBlock x:Name="NavDocsText" Text="Documentation" VerticalAlignment="Center"/>
+            </StackPanel>
+          </Button>
+          <Button Classes="nav" IsEnabled="False">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+              <TextBlock Text="ⓘ" Width="18" TextAlignment="Center"/>
+              <TextBlock x:Name="NavAboutText" Text="About" VerticalAlignment="Center"/>
+            </StackPanel>
+          </Button>
         </StackPanel>
       </DockPanel>
     </Border>
 
-    <Border Grid.Column="1"
-            Background="{DynamicResource PanelBrush}"
-            BorderBrush="{DynamicResource BorderBrush}"
-            BorderThickness="0,0,1,0"
-            Padding="16">
-      <Grid RowDefinitions="Auto,*,Auto">
-        <StackPanel Margin="0,0,0,14" Spacing="10">
-          <StackPanel>
-            <TextBlock Classes="sectionTitle" Text="Accounts"/>
-            <TextBlock Classes="muted" Margin="0,3,0,0" FontSize="12" Text="Run Codex and filesystem-isolated Antigravity profiles in parallel."/>
-          </StackPanel>
-          <StackPanel Orientation="Horizontal" Spacing="6">
-            <Button Classes="subtle" Content="Import" Command="{Binding ImportCommand}"/>
-            <Button Classes="primary" Content="＋ Codex" Command="{Binding CreateCommand}"/>
-            <Button Classes="primary" Content="＋ AG Full" Command="{Binding CreateAntigravityFullCommand}"/>
-            <Button Classes="subtle" Content="＋ AG Shared" Command="{Binding CreateAntigravitySharedCommand}"/>
-          </StackPanel>
-        </StackPanel>
+    <Grid x:Name="WorkspaceShell" Grid.Column="1" ColumnDefinitions="392,*">
+      <Border x:Name="AccountsOverlayScrim"
+              Grid.Column="0"
+              Grid.ColumnSpan="2"
+              IsVisible="False"
+              Background="{DynamicResource OverlayBrush}"
+              Panel.ZIndex="8"
+              PointerPressed="CloseAccountsOverlay"/>
 
-        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-          <ListBox ItemsSource="{Binding ProfileCards}"
-                   SelectedItem="{Binding SelectedProfileCard}"
-                   Background="Transparent"
-                   BorderThickness="0">
-            <ListBox.ItemTemplate>
-              <DataTemplate>
-                <Border Classes="card">
-                  <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="11">
-                    <Grid ColumnDefinitions="Auto,*,Auto">
-                      <Border Width="22" Height="22" CornerRadius="11" Background="{Binding Accent}" VerticalAlignment="Top" Margin="0,2,10,0"/>
-                      <StackPanel Grid.Column="1" Spacing="3">
-                        <StackPanel Orientation="Horizontal" Spacing="7">
-                          <TextBlock Text="{Binding Name}" FontSize="17" FontWeight="SemiBold"/>
-                          <Border Background="{DynamicResource PanelAltBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="7,2">
-                            <TextBlock Text="{Binding ProviderLabel}" FontSize="10"/>
-                          </Border>
-                          <Border IsVisible="{Binding IsGloballyActive}" Background="#167A59" CornerRadius="8" Padding="7,2">
-                            <TextBlock Text="Active (Global)" FontSize="10" Foreground="#C7FFE9"/>
-                          </Border>
-                          <Border IsVisible="{Binding IsAntigravity}" Background="#5A3A16" CornerRadius="8" Padding="7,2">
-                            <TextBlock Text="{Binding RunningLabel}" FontSize="10" Foreground="#FFE2B8"/>
-                          </Border>
-                        </StackPanel>
-                        <TextBlock Classes="muted" Text="{Binding Subtitle}" FontSize="12"/>
-                        <TextBlock Classes="muted" Text="{Binding ProfileHome}" FontSize="11" TextTrimming="CharacterEllipsis"/>
-                      </StackPanel>
-                      <TextBlock Grid.Column="2" Text="⋯" FontSize="18" Classes="muted" Margin="8,0,0,0"/>
-                    </Grid>
+      <Border x:Name="AccountsPane"
+              Grid.Column="0"
+              Background="{DynamicResource PanelBrush}"
+              BorderBrush="{DynamicResource BorderBrush}"
+              BorderThickness="0,0,1,0"
+              Padding="16"
+              Panel.ZIndex="10">
+        <Grid RowDefinitions="Auto,*,Auto">
+          <StackPanel Margin="0,2,0,14" Spacing="12">
+            <Grid ColumnDefinitions="*,Auto">
+              <StackPanel Spacing="3">
+                <TextBlock Classes="pageTitle" Text="Accounts"/>
+                <TextBlock Classes="muted"
+                           FontSize="11"
+                           Text="Isolated Codex and Antigravity profiles"/>
+              </StackPanel>
+              <Button Grid.Column="1"
+                      Classes="ghost compact icon"
+                      Content="↓"
+                      Command="{Binding ImportCommand}"
+                      ToolTip.Tip="Import account"/>
+            </Grid>
 
-                    <Grid Grid.Row="1" ColumnDefinitions="92,*,42" RowDefinitions="Auto,Auto" RowSpacing="7" ColumnSpacing="8" IsVisible="{Binding IsCodex}">
-                      <TextBlock Grid.Row="0" Grid.Column="0" Text="5-hour limit" FontSize="12"/>
-                      <ProgressBar Grid.Row="0" Grid.Column="1" Classes="usage" Minimum="0" Maximum="100" Value="{Binding FiveHourPercent}" Foreground="{Binding Accent}"/>
-                      <TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding FiveHourLabel}" FontSize="12" HorizontalAlignment="Right"/>
-                      <TextBlock Grid.Row="1" Grid.Column="0" Text="Weekly limit" FontSize="12"/>
-                      <ProgressBar Grid.Row="1" Grid.Column="1" Classes="usage" Minimum="0" Maximum="100" Value="{Binding WeeklyPercent}" Foreground="{Binding Accent}"/>
-                      <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding WeeklyLabel}" FontSize="12" HorizontalAlignment="Right"/>
-                    </Grid>
-
-                    <Border Grid.Row="1" IsVisible="{Binding IsAntigravity}" Background="{DynamicResource PanelAltBrush}" CornerRadius="7" Padding="9">
-                      <StackPanel Spacing="3">
-                        <TextBlock Text="{Binding ModeLabel}" FontSize="12" FontWeight="SemiBold"/>
-                        <TextBlock Classes="muted" Text="Filesystem state is isolated. Current Antigravity login still shares the OS credential store." FontSize="11" TextWrapping="Wrap"/>
-                      </StackPanel>
-                    </Border>
-
-                    <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="7">
-                      <Button Classes="primary"
-                              Content="▶  Launch"
-                              Command="{Binding #RootWindow.DataContext.LaunchProfileCommand}"
-                              CommandParameter="{Binding}"/>
-                      <Button Classes="subtle"
-                              IsVisible="{Binding IsCodex}"
-                              Content="↗  Set Global"
-                              Command="{Binding #RootWindow.DataContext.ActivateProfileCommand}"
-                              CommandParameter="{Binding}"/>
-                      <Button Classes="subtle"
-                              IsVisible="{Binding IsCodex}"
-                              Content="⌘  External"
-                              Command="{Binding #RootWindow.DataContext.ExternalProfileCommand}"
-                              CommandParameter="{Binding}"/>
-                      <Button Classes="subtle"
-                              IsVisible="{Binding IsAntigravity}"
-                              Content="■  Stop"
-                              Command="{Binding #RootWindow.DataContext.StopAntigravityProfileCommand}"
-                              CommandParameter="{Binding}"/>
-                      <Button Classes="subtle"
-                              IsVisible="{Binding IsAntigravity}"
-                              Content="↻  Restart"
-                              Command="{Binding #RootWindow.DataContext.RestartAntigravityProfileCommand}"
-                              CommandParameter="{Binding}"/>
-                    </StackPanel>
-                  </Grid>
-                </Border>
-              </DataTemplate>
-            </ListBox.ItemTemplate>
-          </ListBox>
-        </ScrollViewer>
-
-        <Border Grid.Row="2" Margin="0,10,0,0" Padding="10" Background="{DynamicResource PanelAltBrush}" CornerRadius="8">
-          <TextBlock Classes="muted" Text="{Binding Status}" TextWrapping="Wrap" FontSize="11"/>
-        </Border>
-      </Grid>
-    </Border>
-
-    <Grid Grid.Column="2" Margin="12" RowDefinitions="*">
-      <TabControl ItemsSource="{Binding Sessions}"
-                  SelectedItem="{Binding SelectedSession}"
-                  Background="Transparent"
-                  BorderThickness="0">
-        <TabControl.ItemTemplate>
-          <DataTemplate>
-            <StackPanel Orientation="Horizontal" Spacing="7" Margin="5,1">
-              <Border Width="8" Height="8" CornerRadius="4" Background="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
-              <TextBlock Text="{Binding Title}" VerticalAlignment="Center"/>
-              <TextBlock Text="×" Classes="muted" Margin="7,0,0,0"/>
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <Button Classes="primary compact" Content="＋ Codex" Command="{Binding CreateCommand}"/>
+              <Button Classes="subtle compact" Content="＋ AG Full" Command="{Binding CreateAntigravityFullCommand}"/>
+              <Button Classes="ghost compact" Content="AG Shared" Command="{Binding CreateAntigravitySharedCommand}"/>
             </StackPanel>
-          </DataTemplate>
-        </TabControl.ItemTemplate>
+          </StackPanel>
 
-        <TabControl.ContentTemplate>
-          <DataTemplate>
-            <Border Classes="panel" Margin="0,4,0,0">
-              <Grid RowDefinitions="54,*,Auto,42">
-                <Border Grid.Row="0" Background="{DynamicResource PanelAltBrush}" Margin="1" Padding="12,8">
-                  <Grid ColumnDefinitions="*,Auto">
-                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                      <Border Width="28" Height="28" CornerRadius="6" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
-                        <TextBlock Text=">_" FontFamily="Cascadia Mono,Consolas" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11"/>
+          <ScrollViewer Grid.Row="1"
+                        HorizontalScrollBarVisibility="Disabled"
+                        VerticalScrollBarVisibility="Auto">
+            <ListBox ItemsSource="{Binding ProfileCards}"
+                     SelectedItem="{Binding SelectedProfileCard}"
+                     Background="Transparent"
+                     BorderThickness="0">
+              <ListBox.ItemTemplate>
+                <DataTemplate>
+                  <Border Classes="card">
+                    <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="10">
+                      <Grid ColumnDefinitions="Auto,*,Auto">
+                        <Border Width="10"
+                                Height="10"
+                                CornerRadius="5"
+                                Background="{Binding Accent}"
+                                VerticalAlignment="Top"
+                                Margin="0,6,10,0"/>
+
+                        <StackPanel Grid.Column="1" Spacing="3">
+                          <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="{Binding Name}"
+                                       FontSize="15"
+                                       FontWeight="SemiBold"
+                                       VerticalAlignment="Center"/>
+                            <Border Classes="badge">
+                              <TextBlock Text="{Binding ProviderLabel}" FontSize="9"/>
+                            </Border>
+                            <Border IsVisible="{Binding IsGloballyActive}"
+                                    Background="{DynamicResource SuccessBrush}"
+                                    CornerRadius="7"
+                                    Padding="6,2">
+                              <TextBlock Text="Global" FontSize="9" Foreground="White"/>
+                            </Border>
+                          </StackPanel>
+                          <TextBlock Classes="muted"
+                                     Text="{Binding Subtitle}"
+                                     FontSize="11"
+                                     TextTrimming="CharacterEllipsis"/>
+                          <TextBlock Classes="muted"
+                                     Text="{Binding ProfileHome}"
+                                     FontSize="10"
+                                     TextTrimming="CharacterEllipsis"/>
+                        </StackPanel>
+
+                        <Button Grid.Column="2"
+                                Classes="ghost compact icon"
+                                Content="⋯"
+                                IsEnabled="False"
+                                Margin="6,-4,-5,0"/>
+                      </Grid>
+
+                      <StackPanel Grid.Row="1"
+                                  IsVisible="{Binding IsCodex}"
+                                  Spacing="6">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Text="5-hour limit" FontSize="10" Classes="muted"/>
+                          <TextBlock Grid.Column="1" Text="{Binding FiveHourLabel}" FontSize="10"/>
+                        </Grid>
+                        <ProgressBar Classes="usage"
+                                     Minimum="0"
+                                     Maximum="100"
+                                     Value="{Binding FiveHourPercent}"
+                                     Foreground="{Binding Accent}"/>
+
+                        <Grid ColumnDefinitions="*,Auto" Margin="0,2,0,0">
+                          <TextBlock Text="Weekly limit" FontSize="10" Classes="muted"/>
+                          <TextBlock Grid.Column="1" Text="{Binding WeeklyLabel}" FontSize="10"/>
+                        </Grid>
+                        <ProgressBar Classes="usage"
+                                     Minimum="0"
+                                     Maximum="100"
+                                     Value="{Binding WeeklyPercent}"
+                                     Foreground="{Binding Accent}"/>
+                      </StackPanel>
+
+                      <Border Grid.Row="1"
+                              IsVisible="{Binding IsAntigravity}"
+                              Background="{DynamicResource PanelAltBrush}"
+                              CornerRadius="8"
+                              Padding="9,7">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <StackPanel Spacing="2">
+                            <TextBlock Text="{Binding ModeLabel}" FontSize="10" FontWeight="SemiBold"/>
+                            <TextBlock Classes="muted"
+                                       Text="Filesystem-isolated profile"
+                                       FontSize="9"/>
+                          </StackPanel>
+                          <TextBlock Grid.Column="1"
+                                     Text="{Binding RunningLabel}"
+                                     Classes="muted"
+                                     FontSize="9"
+                                     VerticalAlignment="Center"/>
+                        </Grid>
                       </Border>
-                      <TextBlock Text="{Binding CodexHome}" Classes="muted" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
-                    </StackPanel>
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="7">
-                      <Button Classes="subtle" Content="⛶  Split" IsEnabled="False"/>
-                      <Button Classes="subtle" Content="♲" IsEnabled="False" MinWidth="40"/>
-                      <Button Classes="subtle" Content="⋯" IsEnabled="False" MinWidth="40"/>
-                    </StackPanel>
-                  </Grid>
-                </Border>
 
-                <Border Grid.Row="1" Background="{DynamicResource TerminalBrush}" Padding="10">
-                  <terminal:TerminalControl Model="{Binding TerminalModel}"
-                                            FontFamily="Cascadia Mono,Consolas"
-                                            FontSize="13"/>
-                </Border>
+                      <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="5">
+                        <Button Classes="primary compact"
+                                Content="▶ Launch"
+                                Command="{Binding #RootWindow.DataContext.LaunchProfileCommand}"
+                                CommandParameter="{Binding}"/>
+                        <Button Classes="subtle compact"
+                                IsVisible="{Binding IsCodex}"
+                                Content="↗ Global"
+                                Command="{Binding #RootWindow.DataContext.ActivateProfileCommand}"
+                                CommandParameter="{Binding}"/>
+                        <Button Classes="ghost compact"
+                                IsVisible="{Binding IsCodex}"
+                                Content="⌘ External"
+                                Command="{Binding #RootWindow.DataContext.ExternalProfileCommand}"
+                                CommandParameter="{Binding}"/>
+                        <Button Classes="subtle compact"
+                                IsVisible="{Binding IsAntigravity}"
+                                Content="■ Stop"
+                                Command="{Binding #RootWindow.DataContext.StopAntigravityProfileCommand}"
+                                CommandParameter="{Binding}"/>
+                        <Button Classes="ghost compact"
+                                IsVisible="{Binding IsAntigravity}"
+                                Content="↻ Restart"
+                                Command="{Binding #RootWindow.DataContext.RestartAntigravityProfileCommand}"
+                                CommandParameter="{Binding}"/>
+                      </StackPanel>
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+          </ScrollViewer>
 
-                <Border Grid.Row="2" Background="{DynamicResource TerminalBrush}" Padding="12,6,12,10">
-                  <Grid ColumnDefinitions="*,Auto">
-                    <TextBox Grid.Column="0"
-                             Text="{Binding Input, UpdateSourceTrigger=PropertyChanged}"
-                             Watermark="Type input for Codex…"
-                             FontFamily="Cascadia Mono,Consolas"
-                             Background="#0C1118"
-                             BorderBrush="{DynamicResource BorderBrush}"
-                             Foreground="#EAF0F7"/>
-                    <Button Grid.Column="1" Margin="8,0,0,0" Classes="primary" Content="Send ↵" Command="{Binding SendCommand}"/>
-                  </Grid>
-                </Border>
+          <Border Grid.Row="2"
+                  Margin="0,10,0,0"
+                  Padding="9,7"
+                  Background="{DynamicResource PanelAltBrush}"
+                  CornerRadius="8">
+            <TextBlock Classes="muted"
+                       Text="{Binding Status}"
+                       TextWrapping="Wrap"
+                       FontSize="10"/>
+          </Border>
+        </Grid>
+      </Border>
 
-                <Border Grid.Row="3" Background="{DynamicResource PanelAltBrush}" Padding="12,8">
-                  <Grid ColumnDefinitions="*,Auto">
-                    <TextBlock Text="{Binding StartedAtText}" Classes="muted" FontSize="11" VerticalAlignment="Center"/>
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="7">
-                      <Border Width="8" Height="8" CornerRadius="4" Background="#24C98A" VerticalAlignment="Center"/>
-                      <TextBlock Text="{Binding CodexHomeText}" Classes="muted" FontSize="11" VerticalAlignment="Center"/>
-                    </StackPanel>
-                  </Grid>
-                </Border>
-              </Grid>
-            </Border>
-          </DataTemplate>
-        </TabControl.ContentTemplate>
-      </TabControl>
+      <Grid x:Name="TerminalHost"
+            Grid.Column="1"
+            Margin="14"
+            RowDefinitions="Auto,*"
+            Panel.ZIndex="1">
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,10">
+          <Button x:Name="AccountsToggleButton"
+                  Grid.Column="0"
+                  Classes="subtle compact"
+                  Content="☷ Accounts"
+                  IsVisible="False"
+                  Click="ToggleAccountsPane"
+                  Margin="0,0,10,0"/>
+
+          <StackPanel Grid.Column="1" Spacing="1" VerticalAlignment="Center">
+            <TextBlock Text="Terminal workspace" FontSize="14" FontWeight="SemiBold"/>
+            <TextBlock Text="Parallel isolated sessions" Classes="muted" FontSize="10"/>
+          </StackPanel>
+
+          <Border Grid.Column="2"
+                  Background="{DynamicResource PanelAltBrush}"
+                  CornerRadius="8"
+                  Padding="9,5"
+                  VerticalAlignment="Center">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <Border Width="7" Height="7" CornerRadius="4" Background="{DynamicResource SuccessBrush}" VerticalAlignment="Center"/>
+              <TextBlock Text="Ready" Classes="muted" FontSize="10" VerticalAlignment="Center"/>
+            </StackPanel>
+          </Border>
+        </Grid>
+
+        <TabControl Grid.Row="1"
+                    ItemsSource="{Binding Sessions}"
+                    SelectedItem="{Binding SelectedSession}"
+                    Background="Transparent"
+                    BorderThickness="0">
+          <TabControl.ItemTemplate>
+            <DataTemplate>
+              <StackPanel Orientation="Horizontal" Spacing="7" Margin="5,2">
+                <Border Width="7" Height="7" CornerRadius="4" Background="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding Title}" VerticalAlignment="Center" FontSize="11"/>
+                <TextBlock Text="×" Classes="muted" Margin="6,0,0,0"/>
+              </StackPanel>
+            </DataTemplate>
+          </TabControl.ItemTemplate>
+
+          <TabControl.ContentTemplate>
+            <DataTemplate>
+              <Border Classes="panel" Margin="0,4,0,0" ClipToBounds="True">
+                <Grid RowDefinitions="48,*,Auto,34">
+                  <Border Grid.Row="0"
+                          Background="{DynamicResource PanelAltBrush}"
+                          BorderBrush="{DynamicResource BorderBrush}"
+                          BorderThickness="0,0,0,1"
+                          Padding="12,8">
+                    <Grid ColumnDefinitions="*,Auto">
+                      <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                        <Border Width="26"
+                                Height="26"
+                                CornerRadius="7"
+                                BorderBrush="{DynamicResource BorderBrush}"
+                                BorderThickness="1"
+                                Background="{DynamicResource PanelBrush}">
+                          <TextBlock Text=">_"
+                                     FontFamily="Cascadia Mono,Consolas"
+                                     HorizontalAlignment="Center"
+                                     VerticalAlignment="Center"
+                                     FontSize="10"/>
+                        </Border>
+                        <StackPanel Spacing="1">
+                          <TextBlock Text="Codex session" FontSize="10" FontWeight="SemiBold"/>
+                          <TextBlock Text="{Binding CodexHome}"
+                                     Classes="muted"
+                                     TextTrimming="CharacterEllipsis"
+                                     FontSize="9"/>
+                        </StackPanel>
+                      </StackPanel>
+
+                      <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                        <Button Classes="ghost compact icon" Content="⛶" IsEnabled="False" ToolTip.Tip="Split"/>
+                        <Button Classes="ghost compact icon" Content="↻" IsEnabled="False" ToolTip.Tip="Restart"/>
+                        <Button Classes="ghost compact icon" Content="⋯" IsEnabled="False" ToolTip.Tip="More"/>
+                      </StackPanel>
+                    </Grid>
+                  </Border>
+
+                  <Border Grid.Row="1" Background="{DynamicResource TerminalBrush}" Padding="10">
+                    <terminal:TerminalControl Model="{Binding TerminalModel}"
+                                              FontFamily="Cascadia Mono,Consolas"
+                                              FontSize="13"/>
+                  </Border>
+
+                  <Border Grid.Row="2"
+                          Background="{DynamicResource TerminalBrush}"
+                          Padding="12,7,12,10">
+                    <Grid ColumnDefinitions="*,Auto">
+                      <TextBox Grid.Column="0"
+                               Text="{Binding Input, UpdateSourceTrigger=PropertyChanged}"
+                               PlaceholderText="Type input for Codex…"
+                               FontFamily="Cascadia Mono,Consolas"
+                               FontSize="12"
+                               Background="{DynamicResource TerminalFieldBrush}"
+                               BorderBrush="{DynamicResource BorderBrush}"
+                               Foreground="#EAF0F7"
+                               CornerRadius="8"/>
+                      <Button Grid.Column="1"
+                              Margin="8,0,0,0"
+                              Classes="primary compact"
+                              Content="Send ↵"
+                              Command="{Binding SendCommand}"/>
+                    </Grid>
+                  </Border>
+
+                  <Border Grid.Row="3"
+                          Background="{DynamicResource PanelAltBrush}"
+                          BorderBrush="{DynamicResource BorderBrush}"
+                          BorderThickness="0,1,0,0"
+                          Padding="11,7">
+                    <Grid ColumnDefinitions="*,Auto">
+                      <TextBlock Text="{Binding StartedAtText}"
+                                 Classes="muted"
+                                 FontSize="9"
+                                 VerticalAlignment="Center"/>
+                      <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+                        <Border Width="7" Height="7" CornerRadius="4" Background="{DynamicResource SuccessBrush}" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding CodexHomeText}"
+                                   Classes="muted"
+                                   FontSize="9"
+                                   VerticalAlignment="Center"/>
+                      </StackPanel>
+                    </Grid>
+                  </Border>
+                </Grid>
+              </Border>
+            </DataTemplate>
+          </TabControl.ContentTemplate>
+        </TabControl>
+      </Grid>
     </Grid>
   </Grid>
 </Window>
