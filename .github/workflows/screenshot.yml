@@ -27,18 +27,9 @@ jobs:
         run: |
           $exe = Get-ChildItem -Path src/CodexMultipleAccounts.App/bin/Release -Filter CodexMultipleAccounts.App.exe -Recurse | Select-Object -First 1
           if (-not $exe) { throw 'App executable not found.' }
-          $stdout = Join-Path $PWD 'screenshot-app.stdout.log'
-          $stderr = Join-Path $PWD 'screenshot-app.stderr.log'
-          $process = Start-Process $exe.FullName -PassThru -RedirectStandardOutput $stdout -RedirectStandardError $stderr
+          $process = Start-Process $exe.FullName -PassThru
           Set-Content screenshot-process-id.txt $process.Id
           Start-Sleep -Seconds 5
-          $process.Refresh()
-          if ($process.HasExited) {
-            Write-Host "App exited before screenshot capture with code $($process.ExitCode)."
-            if (Test-Path $stdout) { Write-Host '--- app stdout ---'; Get-Content $stdout }
-            if (Test-Path $stderr) { Write-Host '--- app stderr ---'; Get-Content $stderr }
-            throw 'App exited before screenshot capture.'
-          }
       - name: Capture app window
         shell: pwsh
         run: |
@@ -52,13 +43,7 @@ jobs:
           }
           '@
           $pidValue = [int](Get-Content screenshot-process-id.txt)
-          $process = Get-Process -Id $pidValue -ErrorAction SilentlyContinue
-          if (-not $process) {
-            Write-Host 'App exited after the launch health check and before capture.'
-            if (Test-Path 'screenshot-app.stdout.log') { Write-Host '--- app stdout ---'; Get-Content 'screenshot-app.stdout.log' }
-            if (Test-Path 'screenshot-app.stderr.log') { Write-Host '--- app stderr ---'; Get-Content 'screenshot-app.stderr.log' }
-            throw 'App process is no longer running.'
-          }
+          $process = Get-Process -Id $pidValue
           $process.WaitForInputIdle(10000) | Out-Null
           $process.Refresh()
           $handle = $process.MainWindowHandle
