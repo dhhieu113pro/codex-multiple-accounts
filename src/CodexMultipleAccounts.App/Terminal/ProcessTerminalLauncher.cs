@@ -16,7 +16,7 @@ public sealed class ProcessTerminalLauncher
         vm = new TerminalSessionViewModel(title, async input =>
         {
             var active = terminal;
-            if (active is null || !vm.IsRunning)
+            if (active is null || vm is null || !vm.IsRunning)
                 return;
 
             var bytes = System.Text.Encoding.UTF8.GetBytes(input + "\r");
@@ -24,13 +24,13 @@ public sealed class ProcessTerminalLauncher
             await active.WriterStream.FlushAsync();
         }, codexHome);
 
-        vm.TerminalModel.UserInput += bytes =>
+        vm.TerminalModel.UserInput += (_, e) =>
         {
             var active = terminal;
             if (active is null || !vm.IsRunning)
                 return;
 
-            _ = WriteInputAsync(active, bytes);
+            _ = WriteInputAsync(active, e.Data.ToArray());
         };
 
         _ = StartAsync(vm, spec, connection => terminal = connection);
