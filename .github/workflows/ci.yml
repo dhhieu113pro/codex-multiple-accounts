@@ -1,25 +1,19 @@
-name: ci
-
+name: CI
 on:
   push:
-    branches: [ main ]
   pull_request:
-
 jobs:
-  test:
+  build-test:
     strategy:
       fail-fast: false
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-dotnet@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
-      - name: Restore
-        run: dotnet restore CodexMultipleAccounts.slnx
-      - name: Build
-        run: dotnet build CodexMultipleAccounts.slnx --configuration Release --no-restore
-      - name: Test
-        run: dotnet test CodexMultipleAccounts.slnx --configuration Release --no-build --collect:"XPlat Code Coverage"
+      - run: dotnet restore CodexMultipleAccounts.slnx
+      - run: dotnet build CodexMultipleAccounts.slnx -c Release --no-restore
+      - run: dotnet test CodexMultipleAccounts.slnx -c Release --no-build

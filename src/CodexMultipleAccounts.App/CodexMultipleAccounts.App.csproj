@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+<PropertyGroup><OutputType>WinExe</OutputType><AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault></PropertyGroup>
+<ItemGroup><PackageReference Include="Avalonia" Version="11.3.20"/><PackageReference Include="Avalonia.Desktop" Version="11.3.20"/><PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.20"/><PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.20"/><PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2"/></ItemGroup>
+<ItemGroup><ProjectReference Include="../CodexMultipleAccounts.Core/CodexMultipleAccounts.Core.csproj"/></ItemGroup>
+</Project>

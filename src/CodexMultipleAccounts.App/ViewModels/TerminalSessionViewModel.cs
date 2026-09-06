@@ -1,0 +1,1 @@
+using CommunityToolkit.Mvvm.ComponentModel; namespace CodexMultipleAccounts.App.ViewModels; public partial class TerminalSessionViewModel(string title):ObservableObject { public string Title{get;}=title; [ObservableProperty] private string _output="Starting Codex…"; }
