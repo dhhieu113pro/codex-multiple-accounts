@@ -18,11 +18,13 @@ public sealed class ProfileService
 
     public async Task<IReadOnlyList<CodexProfile>> ListAsync() => await LoadAsync();
 
-    public async Task<CodexProfile> CreateAsync(string name)
+    public Task<CodexProfile> CreateAsync(string name) => CreateManagedAsync(name, AccountProvider.Codex, null, "codex-home");
+
+    internal async Task<CodexProfile> CreateManagedAsync(string name, AccountProvider provider, AntigravityProfileMode? antigravityMode, string homeDirectoryName)
     {
         if(string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Profile name is required.",nameof(name));
-        var p=CreateProfile(name);
-        Directory.CreateDirectory(p.CodexHome);
+        var p=CreateProfile(name, provider, antigravityMode, homeDirectoryName);
+        Directory.CreateDirectory(p.ProfileHome);
         var all=await LoadAsync();
         all.Add(p);
         await SaveAsync(all);
@@ -32,7 +34,7 @@ public sealed class ProfileService
     public async Task<CodexProfile> ImportDefaultAsync(string name)
     {
         if(string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Profile name is required.",nameof(name));
-        var p=CreateProfile(name);
+        var p=CreateProfile(name, AccountProvider.Codex, null, "codex-home");
         var profileDirectory=Directory.GetParent(p.CodexHome)!.FullName;
         try
         {
@@ -51,13 +53,13 @@ public sealed class ProfileService
     }
 
     public async Task RenameAsync(Guid id,string name) { var all=await LoadAsync(); var i=all.FindIndex(x=>x.Id==id); if(i<0) throw new KeyNotFoundException(); all[i]=all[i] with{Name=name.Trim()}; await SaveAsync(all); }
-    public async Task DeleteAsync(Guid id) { var all=await LoadAsync(); var p=all.Single(x=>x.Id==id); GuardManaged(p.CodexHome); if(Directory.Exists(p.CodexHome)) Directory.Delete(p.CodexHome,true); all.Remove(p); await SaveAsync(all); }
-    internal async Task SetActiveAsync(Guid id) { var all=await LoadAsync(); for(var i=0;i<all.Count;i++) all[i]=all[i] with{IsGloballyActive=all[i].Id==id}; await SaveAsync(all); }
+    public async Task DeleteAsync(Guid id) { var all=await LoadAsync(); var p=all.Single(x=>x.Id==id); GuardManaged(p.ProfileHome); var profileDirectory=Directory.GetParent(p.ProfileHome)?.FullName; if(profileDirectory is not null&&Directory.Exists(profileDirectory)) Directory.Delete(profileDirectory,true); all.Remove(p); await SaveAsync(all); }
+    internal async Task SetActiveAsync(Guid id) { var all=await LoadAsync(); for(var i=0;i<all.Count;i++) all[i]=all[i] with{IsGloballyActive=all[i].Provider==AccountProvider.Codex&&all[i].Id==id}; await SaveAsync(all); }
 
-    private CodexProfile CreateProfile(string name)
+    private CodexProfile CreateProfile(string name, AccountProvider provider, AntigravityProfileMode? antigravityMode, string homeDirectoryName)
     {
         var id=Guid.NewGuid();
-        return new CodexProfile(id,name.Trim(),Path.Combine(_root,"profiles",id.ToString("N"),"codex-home"),null,false);
+        return new CodexProfile(id,name.Trim(),Path.Combine(_root,"profiles",id.ToString("N"),homeDirectoryName),null,false,provider,antigravityMode);
     }
 
     private void GuardManaged(string path) { var full=Path.GetFullPath(path); var profiles=Path.GetFullPath(Path.Combine(_root,"profiles"))+Path.DirectorySeparatorChar; if(!full.StartsWith(profiles,StringComparison.OrdinalIgnoreCase)||string.Equals(full,_defaultHome,StringComparison.OrdinalIgnoreCase)) throw new InvalidOperationException("Unsafe profile path."); }

@@ -13,7 +13,10 @@ public partial class MainWindowViewModel : ObservableObject
     private static readonly string[] Accents = ["#24C98A", "#2F7CF6", "#9A45F5", "#F59E42"];
 
     private readonly ProfileService _profiles;
+    private readonly AntigravityProfileService _antigravityProfiles;
     private readonly CodexLaunchService _launch = new();
+    private readonly AntigravityLaunchService _antigravityLaunch = new();
+    private readonly AntigravityProcessManager _antigravityProcesses = new();
     private readonly GlobalActivationService _activation;
     private readonly ProcessTerminalLauncher _embedded = new();
     private readonly ExternalTerminalLauncher _external = new();
@@ -37,6 +40,7 @@ public partial class MainWindowViewModel : ObservableObject
     public MainWindowViewModel(string root, string defaultHome)
     {
         _profiles = new ProfileService(root, defaultHome);
+        _antigravityProfiles = new AntigravityProfileService(_profiles);
         _activation = new GlobalActivationService(_profiles, root, defaultHome);
 
         if (Environment.GetEnvironmentVariable("CODEX_MULTIPLE_ACCOUNTS_SCREENSHOT") == "1")
@@ -50,15 +54,15 @@ public partial class MainWindowViewModel : ObservableObject
         var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         var personal = new CodexProfile(Guid.Parse("11111111-1111-1111-1111-111111111111"), "Personal", Path.Combine(home, ".codex-profiles", "personal"), DateTimeOffset.Now, true);
         var work = new CodexProfile(Guid.Parse("22222222-2222-2222-2222-222222222222"), "Work", Path.Combine(home, ".codex-profiles", "work"), DateTimeOffset.Now.AddMinutes(-18), false);
-        var testing = new CodexProfile(Guid.Parse("33333333-3333-3333-3333-333333333333"), "Testing", Path.Combine(home, ".codex-profiles", "testing"), DateTimeOffset.Now.AddHours(-2), false);
+        var antigravity = new CodexProfile(Guid.Parse("33333333-3333-3333-3333-333333333333"), "Antigravity Work", Path.Combine(home, ".antigravity-profiles", "work"), DateTimeOffset.Now.AddHours(-2), false, AccountProvider.Antigravity, AntigravityProfileMode.Full);
 
         Profiles.Add(personal);
         Profiles.Add(work);
-        Profiles.Add(testing);
+        Profiles.Add(antigravity);
 
         ProfileCards.Add(new ProfileCardViewModel(personal, Accents[0], "me@example.com", 78, 62, "78%", "62%"));
         ProfileCards.Add(new ProfileCardViewModel(work, Accents[1], "work@example.com", 91, 74, "91%", "74%"));
-        ProfileCards.Add(new ProfileCardViewModel(testing, Accents[2], "test@example.com", 43, 28, "43%", "28%"));
+        ProfileCards.Add(new ProfileCardViewModel(antigravity, Accents[2], "Antigravity Full profile", isRunning: true));
 
         SelectedProfileCard = ProfileCards[0];
 
@@ -81,7 +85,7 @@ public partial class MainWindowViewModel : ObservableObject
         };
         Sessions.Add(session);
         SelectedSession = session;
-        Status = "Three isolated Codex profiles ready — launch them in parallel or activate one globally.";
+        Status = "Codex accounts are independently isolated. Antigravity profiles isolate filesystem state, but current Antigravity authentication still shares the OS credential store.";
     }
 
     private async Task ReloadAsync()
@@ -102,17 +106,36 @@ public partial class MainWindowViewModel : ObservableObject
         for (var index = 0; index < Profiles.Count; index++)
         {
             var profile = Profiles[index];
-            ProfileCards.Add(new ProfileCardViewModel(profile, Accents[index % Accents.Length]));
+            var running = profile.Provider == AccountProvider.Antigravity && _antigravityProcesses.IsRunning(profile.Id);
+            ProfileCards.Add(new ProfileCardViewModel(profile, Accents[index % Accents.Length], isRunning: running));
         }
     }
 
     [RelayCommand]
     private async Task Create()
     {
-        var created = await _profiles.CreateAsync("Profile " + (Profiles.Count + 1));
+        var created = await _profiles.CreateAsync("Codex " + (Profiles.Count(x => x.Provider == AccountProvider.Codex) + 1));
         SelectedProfile = created;
         await ReloadAsync();
-        Status = "Isolated profile created.";
+        Status = "Isolated Codex profile created.";
+    }
+
+    [RelayCommand]
+    private async Task CreateAntigravityFull()
+    {
+        var created = await _antigravityProfiles.CreateAsync("Antigravity " + (Profiles.Count(x => x.Provider == AccountProvider.Antigravity) + 1), AntigravityProfileMode.Full);
+        SelectedProfile = created;
+        await ReloadAsync();
+        Status = "Antigravity Full profile created. Filesystem state is isolated; OS credential-store authentication is shared.";
+    }
+
+    [RelayCommand]
+    private async Task CreateAntigravityShared()
+    {
+        var created = await _antigravityProfiles.CreateAsync("Antigravity Shared " + (Profiles.Count(x => x.Provider == AccountProvider.Antigravity) + 1), AntigravityProfileMode.Shared);
+        SelectedProfile = created;
+        await ReloadAsync();
+        Status = "Antigravity Shared profile created. Filesystem state is isolated; OS credential-store authentication is shared.";
     }
 
     [RelayCommand]
@@ -125,10 +148,7 @@ public partial class MainWindowViewModel : ObservableObject
     }
 
     [RelayCommand(CanExecute = nameof(HasSelection))]
-    private void Launch()
-    {
-        LaunchProfile(SelectedProfileCard);
-    }
+    private void Launch() => LaunchProfile(SelectedProfileCard);
 
     [RelayCommand]
     private void LaunchProfile(ProfileCardViewModel? card)
@@ -137,6 +157,12 @@ public partial class MainWindowViewModel : ObservableObject
             return;
 
         Select(card);
+        if (card.IsAntigravity)
+        {
+            StartAntigravity(card, restart: false);
+            return;
+        }
+
         var profile = card.Profile;
         var spec = _launch.Create(profile, Environment.CurrentDirectory);
         var session = _embedded.Launch(profile.Name, spec);
@@ -146,10 +172,7 @@ public partial class MainWindowViewModel : ObservableObject
     }
 
     [RelayCommand(CanExecute = nameof(HasSelection))]
-    private void External()
-    {
-        ExternalProfile(SelectedProfileCard);
-    }
+    private void External() => ExternalProfile(SelectedProfileCard);
 
     [RelayCommand]
     private void ExternalProfile(ProfileCardViewModel? card)
@@ -158,16 +181,39 @@ public partial class MainWindowViewModel : ObservableObject
             return;
 
         Select(card);
+        if (card.IsAntigravity)
+        {
+            StartAntigravity(card, restart: false);
+            return;
+        }
+
         var profile = card.Profile;
         _external.Launch(_launch.Create(profile, Environment.CurrentDirectory));
         Status = $"Opened {profile.Name} externally.";
     }
 
-    [RelayCommand(CanExecute = nameof(HasSelection))]
-    private async Task Activate()
+    [RelayCommand]
+    private void StopAntigravityProfile(ProfileCardViewModel? card)
     {
-        await ActivateProfile(SelectedProfileCard);
+        if (card?.IsAntigravity != true)
+            return;
+
+        _antigravityProcesses.Stop(card.Profile.Id);
+        RebuildCards();
+        Status = $"Stopped {card.Name}.";
     }
+
+    [RelayCommand]
+    private void RestartAntigravityProfile(ProfileCardViewModel? card)
+    {
+        if (card?.IsAntigravity != true)
+            return;
+
+        StartAntigravity(card, restart: true);
+    }
+
+    [RelayCommand(CanExecute = nameof(HasSelection))]
+    private async Task Activate() => await ActivateProfile(SelectedProfileCard);
 
     [RelayCommand]
     private async Task ActivateProfile(ProfileCardViewModel? card)
@@ -176,10 +222,33 @@ public partial class MainWindowViewModel : ObservableObject
             return;
 
         Select(card);
+        if (!card.IsCodex)
+        {
+            Status = "Global activation is only available for Codex. Antigravity uses filesystem-isolated launch profiles.";
+            return;
+        }
+
         var profile = card.Profile;
         await _activation.ActivateAsync(profile);
         await ReloadAsync();
         Status = $"{profile.Name} is now globally active. Existing default state was backed up.";
+    }
+
+    private void StartAntigravity(ProfileCardViewModel card, bool restart)
+    {
+        var profile = card.Profile;
+        var platform = AntigravityLaunchService.CurrentPlatform();
+        var executable = AntigravityExecutableLocator.Resolve(platform);
+        var spec = _antigravityLaunch.Create(profile, platform, executable, Environment.CurrentDirectory);
+
+        if (restart)
+            _antigravityProcesses.Restart(profile, spec);
+        else
+            _antigravityProcesses.Start(profile, spec);
+
+        RebuildCards();
+        SelectedProfileCard = ProfileCards.FirstOrDefault(x => x.Profile.Id == profile.Id);
+        Status = $"{(restart ? "Restarted" : "Started")} {profile.Name}. Filesystem state is isolated; Antigravity's OS credential-store login is shared across profiles.";
     }
 
     private void Select(ProfileCardViewModel card)
