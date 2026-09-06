@@ -7,11 +7,16 @@
       <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Dark">
           <SolidColorBrush x:Key="AppBackgroundBrush" Color="#0B0D12"/>
-          <SolidColorBrush x:Key="SidebarBrush" Color="#0E1117"/>
+          <SolidColorBrush x:Key="SidebarBrush" Color="#090D18"/>
+          <SolidColorBrush x:Key="AccountsSurfaceBrush" Color="#0F141C"/>
           <SolidColorBrush x:Key="PanelBrush" Color="#11151C"/>
           <SolidColorBrush x:Key="PanelAltBrush" Color="#171C24"/>
           <SolidColorBrush x:Key="CardBrush" Color="#131820"/>
           <SolidColorBrush x:Key="BorderBrush" Color="#272D37"/>
+          <SolidColorBrush x:Key="NavigationDividerBrush" Color="#202633"/>
+          <SolidColorBrush x:Key="NavigationForegroundBrush" Color="#DDE4EE"/>
+          <SolidColorBrush x:Key="NavigationSelectedSurfaceBrush" Color="#172338"/>
+          <SolidColorBrush x:Key="NavigationSelectedForegroundBrush" Color="#AFC9FF"/>
           <SolidColorBrush x:Key="MutedBrush" Color="#8C96A6"/>
           <SolidColorBrush x:Key="TextBrush" Color="#F3F5F8"/>
           <SolidColorBrush x:Key="PrimaryBrush" Color="#4A86F7"/>
@@ -25,11 +30,16 @@
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
           <SolidColorBrush x:Key="AppBackgroundBrush" Color="#F3F5F7"/>
-          <SolidColorBrush x:Key="SidebarBrush" Color="#FAFBFC"/>
+          <SolidColorBrush x:Key="SidebarBrush" Color="#FFFFFF"/>
+          <SolidColorBrush x:Key="AccountsSurfaceBrush" Color="#F7F9FC"/>
           <SolidColorBrush x:Key="PanelBrush" Color="#FFFFFF"/>
           <SolidColorBrush x:Key="PanelAltBrush" Color="#F5F7F9"/>
           <SolidColorBrush x:Key="CardBrush" Color="#FFFFFF"/>
           <SolidColorBrush x:Key="BorderBrush" Color="#E0E4E9"/>
+          <SolidColorBrush x:Key="NavigationDividerBrush" Color="#E8EBF0"/>
+          <SolidColorBrush x:Key="NavigationForegroundBrush" Color="#344054"/>
+          <SolidColorBrush x:Key="NavigationSelectedSurfaceBrush" Color="#EEF4FF"/>
+          <SolidColorBrush x:Key="NavigationSelectedForegroundBrush" Color="#1D4ED8"/>
           <SolidColorBrush x:Key="MutedBrush" Color="#697386"/>
           <SolidColorBrush x:Key="TextBrush" Color="#1E2632"/>
           <SolidColorBrush x:Key="PrimaryBrush" Color="#2563EB"/>
@@ -98,16 +108,26 @@
     <Style Selector="Button.nav">
       <Setter Property="HorizontalContentAlignment" Value="Left"/>
       <Setter Property="Background" Value="Transparent"/>
-      <Setter Property="Foreground" Value="{DynamicResource MutedBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource NavigationForegroundBrush}"/>
       <Setter Property="BorderThickness" Value="0"/>
-      <Setter Property="Padding" Value="10,9"/>
+      <Setter Property="Padding" Value="9,9"/>
+      <Setter Property="CornerRadius" Value="9"/>
       <Setter Property="Margin" Value="0,2"/>
+      <Setter Property="MinHeight" Value="38"/>
       <Setter Property="MinWidth" Value="0"/>
+      <Setter Property="FontWeight" Value="Medium"/>
     </Style>
 
     <Style Selector="Button.nav.active">
-      <Setter Property="Background" Value="{DynamicResource SelectedBrush}"/>
-      <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+      <Setter Property="Background" Value="{DynamicResource NavigationSelectedSurfaceBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource NavigationSelectedForegroundBrush}"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+
+    <Style Selector="Button.nav:disabled">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Foreground" Value="{DynamicResource NavigationForegroundBrush}"/>
+      <Setter Property="Opacity" Value="0.38"/>
     </Style>
 
     <Style Selector="Border.card">
