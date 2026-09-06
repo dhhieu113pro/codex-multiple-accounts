@@ -15,8 +15,6 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.ref_name }}
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
@@ -67,6 +65,7 @@ jobs:
           name: codex-multiple-accounts-screenshot
           path: docs/assets/app-screenshot.png
       - name: Commit refreshed screenshot
+        if: github.ref == 'refs/heads/main'
         shell: pwsh
         run: |
           git config user.name github-actions[bot]
@@ -74,5 +73,6 @@ jobs:
           git add docs/assets/app-screenshot.png
           if (-not (git diff --cached --quiet)) {
             git commit -m "docs: refresh app screenshot"
-            git push
+            git pull --rebase origin main
+            git push origin HEAD:main
           }
