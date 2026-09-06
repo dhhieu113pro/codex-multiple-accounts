@@ -1,3 +1,4 @@
+using AvaloniaTerminal;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -13,11 +14,18 @@ public partial class TerminalSessionViewModel : ObservableObject
         CodexHome = codexHome ?? string.Empty;
         StartedAt = DateTimeOffset.Now;
         _sendInput = sendInput;
+        TerminalModel = new TerminalControlModel(new TerminalOptions
+        {
+            Cols = 120,
+            Rows = 30,
+            ReflowOnResize = false
+        });
     }
 
     public string Title { get; }
     public string CodexHome { get; }
     public DateTimeOffset StartedAt { get; }
+    public TerminalControlModel TerminalModel { get; }
     public string StartedAtText => $"Session started at {StartedAt:HH:mm:ss}";
     public string CodexHomeText => string.IsNullOrWhiteSpace(CodexHome) ? "CODEX_HOME" : $"CODEX_HOME: {CodexHome}";
 
@@ -27,17 +35,26 @@ public partial class TerminalSessionViewModel : ObservableObject
     [ObservableProperty]
     private string _input = string.Empty;
 
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SendCommand))]
+    private bool _isRunning = true;
+
     public void AppendOutput(string text)
     {
-        Output = string.IsNullOrEmpty(Output) || Output == "Starting Codex…"
-            ? text
-            : Output + text;
+        Output = string.IsNullOrEmpty(Output) || Output == "Starting Codex…" ? text : Output + text;
+        TerminalModel.Feed(text);
+    }
+
+    public void MarkExited(int exitCode)
+    {
+        IsRunning = false;
+        AppendOutput($"\r\nCodex exited with code {exitCode}.\r\n");
     }
 
     [RelayCommand(CanExecute = nameof(CanSend))]
     private async Task SendAsync()
     {
-        if (_sendInput is null || string.IsNullOrEmpty(Input))
+        if (_sendInput is null || !IsRunning || string.IsNullOrEmpty(Input))
             return;
 
         var text = Input;
@@ -45,5 +62,5 @@ public partial class TerminalSessionViewModel : ObservableObject
         await _sendInput(text);
     }
 
-    private bool CanSend() => _sendInput is not null;
+    private bool CanSend() => _sendInput is not null && IsRunning;
 }
