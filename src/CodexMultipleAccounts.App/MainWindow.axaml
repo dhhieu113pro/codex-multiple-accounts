@@ -8,7 +8,7 @@
         MinWidth="1050"
         MinHeight="680"
         Title="Codex Multiple Accounts">
-  <Grid ColumnDefinitions="150,410,*">
+  <Grid ColumnDefinitions="150,430,*">
     <Border Grid.Column="0"
             Background="{DynamicResource SidebarBrush}"
             BorderBrush="{DynamicResource BorderBrush}"
@@ -20,7 +20,7 @@
             <Border Width="28" Height="28" CornerRadius="8" Background="#6C3BF5">
               <TextBlock Text="C" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" Foreground="White"/>
             </Border>
-            <TextBlock Text="Codex" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="15"/>
+            <TextBlock Text="Accounts" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="15"/>
           </StackPanel>
 
           <Button Classes="nav active" Content="♙  Accounts"/>
@@ -42,16 +42,18 @@
             BorderThickness="0,0,1,0"
             Padding="16">
       <Grid RowDefinitions="Auto,*,Auto">
-        <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,14">
+        <StackPanel Margin="0,0,0,14" Spacing="10">
           <StackPanel>
             <TextBlock Classes="sectionTitle" Text="Accounts"/>
-            <TextBlock Classes="muted" Margin="0,3,0,0" FontSize="12" Text="Manage your Codex accounts and run them in parallel."/>
+            <TextBlock Classes="muted" Margin="0,3,0,0" FontSize="12" Text="Run Codex and filesystem-isolated Antigravity profiles in parallel."/>
           </StackPanel>
-          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Top">
+          <StackPanel Orientation="Horizontal" Spacing="6">
             <Button Classes="subtle" Content="Import" Command="{Binding ImportCommand}"/>
-            <Button Classes="primary" Content="＋ Add Account" Command="{Binding CreateCommand}"/>
+            <Button Classes="primary" Content="＋ Codex" Command="{Binding CreateCommand}"/>
+            <Button Classes="primary" Content="＋ AG Full" Command="{Binding CreateAntigravityFullCommand}"/>
+            <Button Classes="subtle" Content="＋ AG Shared" Command="{Binding CreateAntigravitySharedCommand}"/>
           </StackPanel>
-        </Grid>
+        </StackPanel>
 
         <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
           <ListBox ItemsSource="{Binding ProfileCards}"
@@ -64,20 +66,26 @@
                   <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="11">
                     <Grid ColumnDefinitions="Auto,*,Auto">
                       <Border Width="22" Height="22" CornerRadius="11" Background="{Binding Accent}" VerticalAlignment="Top" Margin="0,2,10,0"/>
-                      <StackPanel Grid.Column="1" Spacing="2">
+                      <StackPanel Grid.Column="1" Spacing="3">
                         <StackPanel Orientation="Horizontal" Spacing="7">
                           <TextBlock Text="{Binding Name}" FontSize="17" FontWeight="SemiBold"/>
+                          <Border Background="{DynamicResource PanelAltBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="7,2">
+                            <TextBlock Text="{Binding ProviderLabel}" FontSize="10"/>
+                          </Border>
                           <Border IsVisible="{Binding IsGloballyActive}" Background="#167A59" CornerRadius="8" Padding="7,2">
                             <TextBlock Text="Active (Global)" FontSize="10" Foreground="#C7FFE9"/>
                           </Border>
+                          <Border IsVisible="{Binding IsAntigravity}" Background="#5A3A16" CornerRadius="8" Padding="7,2">
+                            <TextBlock Text="{Binding RunningLabel}" FontSize="10" Foreground="#FFE2B8"/>
+                          </Border>
                         </StackPanel>
                         <TextBlock Classes="muted" Text="{Binding Subtitle}" FontSize="12"/>
-                        <TextBlock Classes="muted" Text="{Binding CodexHome}" FontSize="11" TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Classes="muted" Text="{Binding ProfileHome}" FontSize="11" TextTrimming="CharacterEllipsis"/>
                       </StackPanel>
                       <TextBlock Grid.Column="2" Text="⋯" FontSize="18" Classes="muted" Margin="8,0,0,0"/>
                     </Grid>
 
-                    <Grid Grid.Row="1" ColumnDefinitions="92,*,42" RowDefinitions="Auto,Auto" RowSpacing="7" ColumnSpacing="8">
+                    <Grid Grid.Row="1" ColumnDefinitions="92,*,42" RowDefinitions="Auto,Auto" RowSpacing="7" ColumnSpacing="8" IsVisible="{Binding IsCodex}">
                       <TextBlock Grid.Row="0" Grid.Column="0" Text="5-hour limit" FontSize="12"/>
                       <ProgressBar Grid.Row="0" Grid.Column="1" Classes="usage" Minimum="0" Maximum="100" Value="{Binding FiveHourPercent}" Foreground="{Binding Accent}"/>
                       <TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding FiveHourLabel}" FontSize="12" HorizontalAlignment="Right"/>
@@ -86,24 +94,39 @@
                       <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding WeeklyLabel}" FontSize="12" HorizontalAlignment="Right"/>
                     </Grid>
 
-                    <Grid Grid.Row="2" ColumnDefinitions="*,*,*,Auto" ColumnSpacing="7">
-                      <Button Grid.Column="0"
-                              Classes="primary"
+                    <Border Grid.Row="1" IsVisible="{Binding IsAntigravity}" Background="{DynamicResource PanelAltBrush}" CornerRadius="7" Padding="9">
+                      <StackPanel Spacing="3">
+                        <TextBlock Text="{Binding ModeLabel}" FontSize="12" FontWeight="SemiBold"/>
+                        <TextBlock Classes="muted" Text="Filesystem state is isolated. Current Antigravity login still shares the OS credential store." FontSize="11" TextWrapping="Wrap"/>
+                      </StackPanel>
+                    </Border>
+
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="7">
+                      <Button Classes="primary"
                               Content="▶  Launch"
                               Command="{Binding #RootWindow.DataContext.LaunchProfileCommand}"
                               CommandParameter="{Binding}"/>
-                      <Button Grid.Column="1"
-                              Classes="subtle"
+                      <Button Classes="subtle"
+                              IsVisible="{Binding IsCodex}"
                               Content="↗  Set Global"
                               Command="{Binding #RootWindow.DataContext.ActivateProfileCommand}"
                               CommandParameter="{Binding}"/>
-                      <Button Grid.Column="2"
-                              Classes="subtle"
+                      <Button Classes="subtle"
+                              IsVisible="{Binding IsCodex}"
                               Content="⌘  External"
                               Command="{Binding #RootWindow.DataContext.ExternalProfileCommand}"
                               CommandParameter="{Binding}"/>
-                      <Button Grid.Column="3" Classes="subtle" Content="⋯" IsEnabled="False" MinWidth="40"/>
-                    </Grid>
+                      <Button Classes="subtle"
+                              IsVisible="{Binding IsAntigravity}"
+                              Content="■  Stop"
+                              Command="{Binding #RootWindow.DataContext.StopAntigravityProfileCommand}"
+                              CommandParameter="{Binding}"/>
+                      <Button Classes="subtle"
+                              IsVisible="{Binding IsAntigravity}"
+                              Content="↻  Restart"
+                              Command="{Binding #RootWindow.DataContext.RestartAntigravityProfileCommand}"
+                              CommandParameter="{Binding}"/>
+                    </StackPanel>
                   </Grid>
                 </Border>
               </DataTemplate>
