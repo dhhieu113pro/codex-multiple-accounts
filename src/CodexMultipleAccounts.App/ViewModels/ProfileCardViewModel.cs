@@ -24,7 +24,7 @@ public sealed class ProfileCardViewModel(
     public string ModeLabel => IsAntigravity ? Profile.AntigravityMode?.ToString() ?? "Full" : "Isolated CODEX_HOME";
     public string RunningLabel => IsRunning ? "Running" : "Stopped";
     public string Accent { get; } = accent;
-    public string Subtitle { get; } = subtitle ?? (IsCodex ? "Codex profile" : $"Antigravity {ModeLabel} profile");
+    public string Subtitle => subtitle ?? (IsCodex ? "Codex profile" : $"Antigravity {ModeLabel} profile");
     public double FiveHourPercent { get; } = fiveHourPercent;
     public double WeeklyPercent { get; } = weeklyPercent;
     public string FiveHourLabel { get; } = fiveHourLabel;
