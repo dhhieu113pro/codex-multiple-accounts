@@ -64,17 +64,20 @@ public partial class MainWindowViewModel : ObservableObject
 
         var session = new TerminalSessionViewModel("Personal", codexHome: personal.CodexHome)
         {
-            Output = "Welcome to Codex (Personal)\nUsing CODEX_HOME: " + personal.CodexHome + "\n\n" +
-                     "   ____          __         \n" +
-                     "  / ___|___   __| | _____  _\n" +
-                     " | |   / _ \\ / _` |/ _ \\ \/ /\n" +
-                     " | |__| (_) | (_| |  __/>  < \n" +
-                     "  \\____\\___/ \\__,_|\\___/_/\\_\\\n\n" +
-                     "Your AI pair programmer\n\n" +
-                     "/help     Show available commands\n" +
-                     "/status   Show current workspace status\n" +
-                     "/clear    Clear the conversation\n" +
-                     "/exit     Exit Codex\n\n> "
+            Output = $"""
+                     Welcome to Codex (Personal)
+                     Using CODEX_HOME: {personal.CodexHome}
+
+                     CODEX
+                     Your AI pair programmer
+
+                     /help     Show available commands
+                     /status   Show current workspace status
+                     /clear    Clear the conversation
+                     /exit     Exit Codex
+
+                     >
+                     """
         };
         Sessions.Add(session);
         SelectedSession = session;
