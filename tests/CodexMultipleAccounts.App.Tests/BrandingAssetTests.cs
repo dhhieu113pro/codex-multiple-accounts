@@ -25,16 +25,9 @@ public sealed class BrandingAssetTests
             "src",
             "CodexMultipleAccounts.App",
             "MainWindow.axaml.cs"));
-        var xaml = File.ReadAllText(Path.Combine(
-            root,
-            "src",
-            "CodexMultipleAccounts.App",
-            "MainWindow.axaml"));
 
         Assert.Contains("BrandAssets.CreateWindowIcon()", codeBehind);
-        Assert.Contains(
-            "avares://CodexMultipleAccounts.App/Assets/CodexMultipleAccountsLogo.png",
-            xaml);
+        Assert.Contains("BrandAssets.CreateBitmap()", codeBehind);
     }
 
     [Fact]
