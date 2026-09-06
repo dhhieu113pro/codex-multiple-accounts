@@ -7,11 +7,16 @@ namespace CodexMultipleAccounts.App.Terminal;
 
 public sealed class ProcessTerminalLauncher
 {
+    private const int InitialCols = 120;
+    private const int InitialRows = 30;
+
     public TerminalSessionViewModel Launch(string title, CodexLaunchSpec spec)
     {
         spec.Environment.TryGetValue("CODEX_HOME", out var codexHome);
 
         IPtyConnection? terminal = null;
+        var cols = InitialCols;
+        var rows = InitialRows;
         TerminalSessionViewModel? vm = null;
         vm = new TerminalSessionViewModel(title, async input =>
         {
@@ -20,20 +25,36 @@ public sealed class ProcessTerminalLauncher
                 return;
 
             var bytes = System.Text.Encoding.UTF8.GetBytes(input + "\r");
-            await active.WriterStream.WriteAsync(bytes);
-            await active.WriterStream.FlushAsync();
+            await WriteInputAsync(active, bytes);
         }, codexHome);
 
         vm.TerminalModel.UserInput += (_, e) =>
         {
             var active = terminal;
-            if (active is null || !vm.IsRunning)
+            if (active is null || !vm.IsRunning || e.Data.Length == 0)
                 return;
 
             _ = WriteInputAsync(active, e.Data.ToArray());
         };
 
-        _ = StartAsync(vm, spec, connection => terminal = connection);
+        vm.TerminalModel.SizeChanged += (_, e) =>
+        {
+            if (e.Cols <= 0 || e.Rows <= 0)
+                return;
+
+            cols = e.Cols;
+            rows = e.Rows;
+
+            var active = terminal;
+            if (active is not null && vm.IsRunning)
+                TryResize(active, cols, rows);
+        };
+
+        _ = StartAsync(vm, spec, connection =>
+        {
+            terminal = connection;
+            TryResize(connection, cols, rows);
+        });
         return vm;
     }
 
@@ -48,8 +69,8 @@ public sealed class ProcessTerminalLauncher
             var options = new PtyOptions
             {
                 Name = vm.Title,
-                Cols = 120,
-                Rows = 30,
+                Cols = InitialCols,
+                Rows = InitialRows,
                 Cwd = spec.WorkingDirectory,
                 App = spec.Executable,
                 CommandLine = spec.Arguments.ToArray(),
@@ -110,6 +131,22 @@ public sealed class ProcessTerminalLauncher
         catch (IOException)
         {
             // The PTY closed between the input event and the write.
+        }
+    }
+
+    private static void TryResize(IPtyConnection terminal, int cols, int rows)
+    {
+        try
+        {
+            terminal.Resize(cols, rows);
+        }
+        catch (ObjectDisposedException)
+        {
+            // The PTY exited between the resize event and this call.
+        }
+        catch (IOException)
+        {
+            // The PTY closed between the resize event and this call.
         }
     }
 }
