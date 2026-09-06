@@ -7,13 +7,19 @@ public partial class TerminalSessionViewModel : ObservableObject
 {
     private readonly Func<string, Task>? _sendInput;
 
-    public TerminalSessionViewModel(string title, Func<string, Task>? sendInput = null)
+    public TerminalSessionViewModel(string title, Func<string, Task>? sendInput = null, string? codexHome = null)
     {
         Title = title;
+        CodexHome = codexHome ?? string.Empty;
+        StartedAt = DateTimeOffset.Now;
         _sendInput = sendInput;
     }
 
     public string Title { get; }
+    public string CodexHome { get; }
+    public DateTimeOffset StartedAt { get; }
+    public string StartedAtText => $"Session started at {StartedAt:HH:mm:ss}";
+    public string CodexHomeText => string.IsNullOrWhiteSpace(CodexHome) ? "CODEX_HOME" : $"CODEX_HOME: {CodexHome}";
 
     [ObservableProperty]
     private string _output = "Starting Codex…";
