@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/assets/codex-multiple-accounts-logo.png" alt="Codex Multiple Accounts logo" width="160" />
+</p>
+
 # Codex Multiple Accounts
 
 Cross-platform Avalonia manager for running isolated Codex profiles and parallel Antigravity filesystem profiles.

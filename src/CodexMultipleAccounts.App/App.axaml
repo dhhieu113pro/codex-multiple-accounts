@@ -6,28 +6,50 @@
     <ResourceDictionary>
       <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Dark">
-          <SolidColorBrush x:Key="AppBackgroundBrush" Color="#08111F"/>
-          <SolidColorBrush x:Key="SidebarBrush" Color="#0B1423"/>
-          <SolidColorBrush x:Key="PanelBrush" Color="#101B2C"/>
-          <SolidColorBrush x:Key="PanelAltBrush" Color="#152235"/>
-          <SolidColorBrush x:Key="CardBrush" Color="#172437"/>
-          <SolidColorBrush x:Key="BorderBrush" Color="#26364B"/>
-          <SolidColorBrush x:Key="MutedBrush" Color="#8EA1B9"/>
-          <SolidColorBrush x:Key="TextBrush" Color="#F3F7FC"/>
-          <SolidColorBrush x:Key="PrimaryBrush" Color="#2F7CF6"/>
-          <SolidColorBrush x:Key="TerminalBrush" Color="#020406"/>
+          <SolidColorBrush x:Key="AppBackgroundBrush" Color="#0B0D12"/>
+          <SolidColorBrush x:Key="SidebarBrush" Color="#090D18"/>
+          <SolidColorBrush x:Key="AccountsSurfaceBrush" Color="#0F141C"/>
+          <SolidColorBrush x:Key="PanelBrush" Color="#11151C"/>
+          <SolidColorBrush x:Key="PanelAltBrush" Color="#171C24"/>
+          <SolidColorBrush x:Key="CardBrush" Color="#131820"/>
+          <SolidColorBrush x:Key="BorderBrush" Color="#272D37"/>
+          <SolidColorBrush x:Key="NavigationDividerBrush" Color="#202633"/>
+          <SolidColorBrush x:Key="NavigationForegroundBrush" Color="#DDE4EE"/>
+          <SolidColorBrush x:Key="NavigationSelectedSurfaceBrush" Color="#172338"/>
+          <SolidColorBrush x:Key="NavigationSelectedForegroundBrush" Color="#AFC9FF"/>
+          <SolidColorBrush x:Key="MutedBrush" Color="#8C96A6"/>
+          <SolidColorBrush x:Key="TextBrush" Color="#F3F5F8"/>
+          <SolidColorBrush x:Key="PrimaryBrush" Color="#4A86F7"/>
+          <SolidColorBrush x:Key="PrimarySoftBrush" Color="#192A45"/>
+          <SolidColorBrush x:Key="SelectedBrush" Color="#1A2535"/>
+          <SolidColorBrush x:Key="SuccessBrush" Color="#2BC48A"/>
+          <SolidColorBrush x:Key="WarningBrush" Color="#D99B4A"/>
+          <SolidColorBrush x:Key="TerminalBrush" Color="#050608"/>
+          <SolidColorBrush x:Key="TerminalFieldBrush" Color="#0B0E13"/>
+          <SolidColorBrush x:Key="OverlayBrush" Color="#99070A0F"/>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
-          <SolidColorBrush x:Key="AppBackgroundBrush" Color="#EFF4FA"/>
-          <SolidColorBrush x:Key="SidebarBrush" Color="#F7F9FC"/>
+          <SolidColorBrush x:Key="AppBackgroundBrush" Color="#F3F5F7"/>
+          <SolidColorBrush x:Key="SidebarBrush" Color="#FFFFFF"/>
+          <SolidColorBrush x:Key="AccountsSurfaceBrush" Color="#F7F9FC"/>
           <SolidColorBrush x:Key="PanelBrush" Color="#FFFFFF"/>
-          <SolidColorBrush x:Key="PanelAltBrush" Color="#F2F6FB"/>
+          <SolidColorBrush x:Key="PanelAltBrush" Color="#F5F7F9"/>
           <SolidColorBrush x:Key="CardBrush" Color="#FFFFFF"/>
-          <SolidColorBrush x:Key="BorderBrush" Color="#D5DFEB"/>
-          <SolidColorBrush x:Key="MutedBrush" Color="#607085"/>
-          <SolidColorBrush x:Key="TextBrush" Color="#152033"/>
-          <SolidColorBrush x:Key="PrimaryBrush" Color="#236DF2"/>
-          <SolidColorBrush x:Key="TerminalBrush" Color="#0A0D12"/>
+          <SolidColorBrush x:Key="BorderBrush" Color="#E0E4E9"/>
+          <SolidColorBrush x:Key="NavigationDividerBrush" Color="#E8EBF0"/>
+          <SolidColorBrush x:Key="NavigationForegroundBrush" Color="#344054"/>
+          <SolidColorBrush x:Key="NavigationSelectedSurfaceBrush" Color="#EEF4FF"/>
+          <SolidColorBrush x:Key="NavigationSelectedForegroundBrush" Color="#1D4ED8"/>
+          <SolidColorBrush x:Key="MutedBrush" Color="#697386"/>
+          <SolidColorBrush x:Key="TextBrush" Color="#1E2632"/>
+          <SolidColorBrush x:Key="PrimaryBrush" Color="#2563EB"/>
+          <SolidColorBrush x:Key="PrimarySoftBrush" Color="#EAF1FF"/>
+          <SolidColorBrush x:Key="SelectedBrush" Color="#EDF3FC"/>
+          <SolidColorBrush x:Key="SuccessBrush" Color="#16845E"/>
+          <SolidColorBrush x:Key="WarningBrush" Color="#A96B1D"/>
+          <SolidColorBrush x:Key="TerminalBrush" Color="#080A0E"/>
+          <SolidColorBrush x:Key="TerminalFieldBrush" Color="#10141A"/>
+          <SolidColorBrush x:Key="OverlayBrush" Color="#520D121A"/>
         </ResourceDictionary>
       </ResourceDictionary.ThemeDictionaries>
     </ResourceDictionary>
@@ -44,10 +66,24 @@
     </Style>
 
     <Style Selector="Button">
-      <Setter Property="MinHeight" Value="36"/>
-      <Setter Property="Padding" Value="13,8"/>
-      <Setter Property="CornerRadius" Value="7"/>
+      <Setter Property="MinHeight" Value="34"/>
+      <Setter Property="Padding" Value="12,7"/>
+      <Setter Property="CornerRadius" Value="8"/>
       <Setter Property="FontWeight" Value="Medium"/>
+      <Setter Property="FontSize" Value="12"/>
+    </Style>
+
+    <Style Selector="Button.compact">
+      <Setter Property="MinHeight" Value="30"/>
+      <Setter Property="Padding" Value="9,5"/>
+      <Setter Property="CornerRadius" Value="7"/>
+    </Style>
+
+    <Style Selector="Button.icon">
+      <Setter Property="MinWidth" Value="32"/>
+      <Setter Property="Width" Value="32"/>
+      <Setter Property="Padding" Value="0"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
     </Style>
 
     <Style Selector="Button.primary">
@@ -63,55 +99,110 @@
       <Setter Property="BorderThickness" Value="1"/>
     </Style>
 
+    <Style Selector="Button.ghost">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Foreground" Value="{DynamicResource MutedBrush}"/>
+      <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+
+    <Style Selector="Button.ghost:disabled">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderBrush" Value="Transparent"/>
+      <Setter Property="Opacity" Value="0.35"/>
+    </Style>
+
+    <Style Selector="Button.ghost:disabled /template/ ContentPresenter">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderBrush" Value="Transparent"/>
+    </Style>
+
     <Style Selector="Button.nav">
       <Setter Property="HorizontalContentAlignment" Value="Left"/>
       <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Foreground" Value="{DynamicResource NavigationForegroundBrush}"/>
       <Setter Property="BorderThickness" Value="0"/>
-      <Setter Property="Padding" Value="14,10"/>
+      <Setter Property="Padding" Value="9,9"/>
+      <Setter Property="CornerRadius" Value="9"/>
       <Setter Property="Margin" Value="0,2"/>
+      <Setter Property="MinHeight" Value="38"/>
+      <Setter Property="MinWidth" Value="0"/>
+      <Setter Property="FontWeight" Value="Medium"/>
     </Style>
 
     <Style Selector="Button.nav.active">
-      <Setter Property="Background" Value="#263E68"/>
-      <Setter Property="Foreground" Value="White"/>
+      <Setter Property="Background" Value="{DynamicResource NavigationSelectedSurfaceBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource NavigationSelectedForegroundBrush}"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+
+    <Style Selector="Button.nav:disabled">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderBrush" Value="Transparent"/>
+      <Setter Property="Foreground" Value="{DynamicResource NavigationForegroundBrush}"/>
+      <Setter Property="Opacity" Value="0.38"/>
+    </Style>
+
+    <Style Selector="Button.nav:disabled /template/ ContentPresenter">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderBrush" Value="Transparent"/>
     </Style>
 
     <Style Selector="Border.card">
       <Setter Property="Background" Value="{DynamicResource CardBrush}"/>
       <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
       <Setter Property="BorderThickness" Value="1"/>
-      <Setter Property="CornerRadius" Value="10"/>
-      <Setter Property="Padding" Value="14"/>
+      <Setter Property="CornerRadius" Value="12"/>
+      <Setter Property="Padding" Value="12"/>
     </Style>
 
     <Style Selector="Border.panel">
       <Setter Property="Background" Value="{DynamicResource PanelBrush}"/>
       <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
       <Setter Property="BorderThickness" Value="1"/>
-      <Setter Property="CornerRadius" Value="10"/>
+      <Setter Property="CornerRadius" Value="12"/>
+    </Style>
+
+    <Style Selector="Border.badge">
+      <Setter Property="Background" Value="{DynamicResource PanelAltBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius" Value="7"/>
+      <Setter Property="Padding" Value="6,2"/>
     </Style>
 
     <Style Selector="TextBlock.muted">
       <Setter Property="Foreground" Value="{DynamicResource MutedBrush}"/>
     </Style>
 
+    <Style Selector="TextBlock.pageTitle">
+      <Setter Property="FontSize" Value="22"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="LetterSpacing" Value="-0.2"/>
+    </Style>
+
     <Style Selector="TextBlock.sectionTitle">
-      <Setter Property="FontSize" Value="24"/>
+      <Setter Property="FontSize" Value="20"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+
+    <Style Selector="TextBlock.eyebrow">
+      <Setter Property="Foreground" Value="{DynamicResource MutedBrush}"/>
+      <Setter Property="FontSize" Value="10"/>
       <Setter Property="FontWeight" Value="SemiBold"/>
     </Style>
 
     <Style Selector="ListBoxItem">
       <Setter Property="Padding" Value="0"/>
-      <Setter Property="Margin" Value="0,0,0,10"/>
+      <Setter Property="Margin" Value="0,0,0,9"/>
       <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
       <Setter Property="Background" Value="Transparent"/>
       <Setter Property="BorderThickness" Value="0"/>
     </Style>
 
     <Style Selector="ProgressBar.usage">
-      <Setter Property="Height" Value="6"/>
-      <Setter Property="MinHeight" Value="6"/>
-      <Setter Property="Background" Value="#2A3A52"/>
+      <Setter Property="Height" Value="5"/>
+      <Setter Property="MinHeight" Value="5"/>
+      <Setter Property="Background" Value="{DynamicResource PanelAltBrush}"/>
       <Setter Property="CornerRadius" Value="3"/>
     </Style>
   </Application.Styles>
