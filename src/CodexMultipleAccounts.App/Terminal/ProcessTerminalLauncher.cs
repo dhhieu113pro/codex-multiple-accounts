@@ -1,7 +1,7 @@
-using System.Diagnostics;
 using Avalonia.Threading;
 using CodexMultipleAccounts.App.ViewModels;
 using CodexMultipleAccounts.Core.Launching;
+using Porta.Pty;
 
 namespace CodexMultipleAccounts.App.Terminal;
 
@@ -9,76 +9,107 @@ public sealed class ProcessTerminalLauncher
 {
     public TerminalSessionViewModel Launch(string title, CodexLaunchSpec spec)
     {
-        Process? process = null;
-        TerminalSessionViewModel? vm = null;
         spec.Environment.TryGetValue("CODEX_HOME", out var codexHome);
 
-        try
+        IPtyConnection? terminal = null;
+        TerminalSessionViewModel? vm = null;
+        vm = new TerminalSessionViewModel(title, async input =>
         {
-            var psi = new ProcessStartInfo(spec.Executable)
-            {
-                WorkingDirectory = spec.WorkingDirectory,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                RedirectStandardInput = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
+            var active = terminal;
+            if (active is null || !vm.IsRunning)
+                return;
 
-            foreach (var argument in spec.Arguments)
-                psi.ArgumentList.Add(argument);
-            foreach (var entry in spec.Environment)
-                psi.Environment[entry.Key] = entry.Value;
+            var bytes = System.Text.Encoding.UTF8.GetBytes(input + "\r");
+            await active.WriterStream.WriteAsync(bytes);
+            await active.WriterStream.FlushAsync();
+        }, codexHome);
 
-            process = new Process { StartInfo = psi, EnableRaisingEvents = true };
-            vm = new TerminalSessionViewModel(title, async input =>
-            {
-                if (process.HasExited)
-                    return;
-
-                await process.StandardInput.WriteLineAsync(input);
-                await process.StandardInput.FlushAsync();
-            }, codexHome);
-
-            process.OutputDataReceived += (_, e) => AppendLine(vm, e.Data);
-            process.ErrorDataReceived += (_, e) => AppendLine(vm, e.Data);
-
-            if (!process.Start())
-                throw new InvalidOperationException("Unable to start Codex.");
-
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
-            _ = ObserveExitAsync(process, vm);
-        }
-        catch (Exception ex)
+        vm.TerminalModel.UserInput += bytes =>
         {
-            process?.Dispose();
-            vm ??= new TerminalSessionViewModel(title, codexHome: codexHome);
-            vm.Output = ex.Message;
-        }
+            var active = terminal;
+            if (active is null || !vm.IsRunning)
+                return;
 
+            _ = WriteInputAsync(active, bytes);
+        };
+
+        _ = StartAsync(vm, spec, connection => terminal = connection);
         return vm;
     }
 
-    private static void AppendLine(TerminalSessionViewModel vm, string? line)
+    private static async Task StartAsync(
+        TerminalSessionViewModel vm,
+        CodexLaunchSpec spec,
+        Action<IPtyConnection> onStarted)
     {
-        if (line is null)
-            return;
-
-        Dispatcher.UIThread.Post(() => vm.AppendOutput(line + Environment.NewLine));
-    }
-
-    private static async Task ObserveExitAsync(Process process, TerminalSessionViewModel vm)
-    {
+        IPtyConnection? terminal = null;
         try
         {
-            await process.WaitForExitAsync();
+            var options = new PtyOptions
+            {
+                Name = vm.Title,
+                Cols = 120,
+                Rows = 30,
+                Cwd = spec.WorkingDirectory,
+                App = spec.Executable,
+                CommandLine = spec.Arguments.ToArray(),
+                Environment = new Dictionary<string, string>(spec.Environment)
+            };
+
+            terminal = await PtyProvider.SpawnAsync(options, CancellationToken.None);
+            onStarted(terminal);
+
+            terminal.ProcessExited += (_, e) =>
+                Dispatcher.UIThread.Post(() => vm.MarkExited(e.ExitCode));
+
+            await PumpOutputAsync(terminal, vm);
+        }
+        catch (Exception ex)
+        {
             await Dispatcher.UIThread.InvokeAsync(() =>
-                vm.AppendOutput($"{Environment.NewLine}Codex exited with code {process.ExitCode}.{Environment.NewLine}"));
+            {
+                vm.IsRunning = false;
+                vm.AppendOutput($"Unable to start embedded PTY: {ex.Message}\r\nUse Open externally as a fallback.\r\n");
+            });
         }
         finally
         {
-            process.Dispose();
+            terminal?.Dispose();
+        }
+    }
+
+    private static async Task PumpOutputAsync(IPtyConnection terminal, TerminalSessionViewModel vm)
+    {
+        var buffer = new byte[8192];
+        while (vm.IsRunning)
+        {
+            var read = await terminal.ReaderStream.ReadAsync(buffer);
+            if (read == 0)
+                break;
+
+            var copy = buffer[..read].ToArray();
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                vm.Output = string.Empty;
+                vm.TerminalModel.Feed(copy, copy.Length);
+            });
+        }
+    }
+
+    private static async Task WriteInputAsync(IPtyConnection terminal, byte[] bytes)
+    {
+        try
+        {
+            await terminal.WriterStream.WriteAsync(bytes);
+            await terminal.WriterStream.FlushAsync();
+        }
+        catch (ObjectDisposedException)
+        {
+            // The PTY exited between the input event and the write.
+        }
+        catch (IOException)
+        {
+            // The PTY closed between the input event and the write.
         }
     }
 }
