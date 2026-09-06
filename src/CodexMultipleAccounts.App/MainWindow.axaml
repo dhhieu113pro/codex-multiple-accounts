@@ -79,7 +79,7 @@
               Grid.ColumnSpan="2"
               IsVisible="False"
               Background="{DynamicResource OverlayBrush}"
-              Panel.ZIndex="8"
+              ZIndex="8"
               PointerPressed="CloseAccountsOverlay"/>
 
       <Border x:Name="AccountsPane"
@@ -88,7 +88,7 @@
               BorderBrush="{DynamicResource BorderBrush}"
               BorderThickness="0,0,1,0"
               Padding="16"
-              Panel.ZIndex="10">
+              ZIndex="10">
         <Grid RowDefinitions="Auto,*,Auto">
           <StackPanel Margin="0,2,0,14" Spacing="12">
             <Grid ColumnDefinitions="*,Auto">
@@ -258,7 +258,7 @@
             Grid.Column="1"
             Margin="14"
             RowDefinitions="Auto,*"
-            Panel.ZIndex="1">
+            ZIndex="1">
         <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,10">
           <Button x:Name="AccountsToggleButton"
                   Grid.Column="0"
