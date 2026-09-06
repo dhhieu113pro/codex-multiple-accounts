@@ -2,7 +2,7 @@
 
 ## Goal
 
-Extend Codex Multiple Accounts into a provider-aware Avalonia account launcher while preserving existing Codex behavior and adding Multigravity-style isolated Antigravity profiles that can run in parallel on Windows, Linux, and macOS.
+Extend Codex Multiple Accounts into a provider-aware Avalonia launcher while preserving existing Codex behavior and adding Multigravity-style Antigravity filesystem profiles that can run in parallel on Windows, Linux, and macOS.
 
 ## Architecture
 
@@ -12,12 +12,9 @@ Codex continues to launch through the existing PTY with a child-scoped `CODEX_HO
 
 ## Provider model
 
-Add `AccountProvider` with stable IDs `codex` and `antigravity`. Existing persisted Codex profiles remain readable and are treated as provider `codex` when no provider field exists.
+Add `AccountProvider` with stable enum values for Codex and Antigravity. Existing persisted Codex profiles remain readable because missing provider metadata defaults to Codex.
 
-Antigravity profiles support two modes:
-
-- `Full`: isolated profile root, settings, extensions, caches, and application state.
-- `Shared`: isolated account/application state while settings/extensions are shared with the normal Antigravity installation where the platform supports the required links/arguments.
+Antigravity profile metadata includes `Full` and `Shared` modes. `Full` is the supported isolation mode in this slice. `Shared` is persisted and exposed for forward compatibility, but real cross-platform settings/extensions sharing is deferred until safe symlink/junction behavior is implemented.
 
 ## Launch isolation
 
@@ -25,13 +22,17 @@ Windows Antigravity launch sets child-only `USERPROFILE`, `APPDATA`, and `LOCALA
 
 No Antigravity launch changes the parent process environment.
 
+## Authentication boundary
+
+Current Antigravity versions use a fixed OS credential-store identity. Filesystem isolation therefore does not guarantee independent logged-in Antigravity accounts under the same OS user. The implementation must expose this limitation clearly and must not claim independent Antigravity authentication until a stronger OS-user/keychain boundary exists.
+
 ## Process tracking
 
 Track Antigravity process IDs per profile for the current manager session. The UI exposes Running/Stopped state and Start/Stop/Restart actions. Process tracking is intentionally best-effort across app restarts; persisted PID recovery is out of scope for this slice.
 
 ## UI
 
-Keep the current account-card dashboard. Add a provider badge, provider-aware Add Account flow, and Antigravity actions. Codex retains embedded PTY, external launch, and global activation. Antigravity launches externally and does not expose global activation in this slice.
+Keep the current account-card dashboard. Add a provider badge, provider-aware Add Account controls, and Antigravity actions. Codex retains embedded PTY, external launch, and global activation. Antigravity launches externally and does not expose global activation in this slice.
 
 ## Compatibility and safety
 
@@ -40,6 +41,7 @@ Keep the current account-card dashboard. Add a provider badge, provider-aware Ad
 - Never inspect or log credential/token contents.
 - Never mutate the normal Antigravity profile while creating isolated profiles.
 - Delete operations remain constrained to manager-owned profile roots.
+- Antigravity independent-auth support is reported as false for this isolation strategy.
 
 ## Testing
 
