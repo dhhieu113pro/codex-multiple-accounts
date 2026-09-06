@@ -27,9 +27,18 @@ jobs:
         run: |
           $exe = Get-ChildItem -Path src/CodexMultipleAccounts.App/bin/Release -Filter CodexMultipleAccounts.App.exe -Recurse | Select-Object -First 1
           if (-not $exe) { throw 'App executable not found.' }
-          $process = Start-Process $exe.FullName -PassThru
+          $stdout = Join-Path $PWD 'screenshot-app.stdout.log'
+          $stderr = Join-Path $PWD 'screenshot-app.stderr.log'
+          $process = Start-Process $exe.FullName -PassThru -RedirectStandardOutput $stdout -RedirectStandardError $stderr
           Set-Content screenshot-process-id.txt $process.Id
           Start-Sleep -Seconds 5
+          $process.Refresh()
+          if ($process.HasExited) {
+            Write-Host "App exited before screenshot capture with code $($process.ExitCode)."
+            if (Test-Path $stdout) { Write-Host '--- app stdout ---'; Get-Content $stdout }
+            if (Test-Path $stderr) { Write-Host '--- app stderr ---'; Get-Content $stderr }
+            throw 'App exited before screenshot capture.'
+          }
       - name: Capture app window
         shell: pwsh
         run: |
