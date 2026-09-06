@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
+using CodexMultipleAccounts.App.Branding;
 
 namespace CodexMultipleAccounts.App;
 
@@ -14,6 +15,14 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        Icon = BrandAssets.CreateWindowIcon();
+        BrandRow.Children[0] = new Image
+        {
+            Source = BrandAssets.CreateBitmap(),
+            Width = 32,
+            Height = 32,
+            Stretch = Avalonia.Media.Stretch.Uniform
+        };
         _layoutReady = true;
         Opened += (_, _) => ApplyAdaptiveLayout(Bounds.Width);
     }

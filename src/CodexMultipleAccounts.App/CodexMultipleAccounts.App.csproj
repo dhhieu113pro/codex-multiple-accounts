@@ -1,6 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
-<PropertyGroup><OutputType>WinExe</OutputType><AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault></PropertyGroup>
+<PropertyGroup>
+  <OutputType>WinExe</OutputType>
+  <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
+  <ApplicationIcon>Assets\CodexMultipleAccounts.ico</ApplicationIcon>
+</PropertyGroup>
 <ItemGroup>
+  <AvaloniaResource Include="Assets\CodexMultipleAccountsLogo.png" />
   <PackageReference Include="Avalonia" Version="12.0.1"/>
   <PackageReference Include="Avalonia.Desktop" Version="12.0.1"/>
   <PackageReference Include="Avalonia.Themes.Fluent" Version="12.0.1"/>
