@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 
 namespace CodexMultipleAccounts.App;
 
@@ -61,6 +62,18 @@ public partial class MainWindow : Window
         NavDocsText.IsVisible = layout.ShowNavigationLabels;
         NavAboutText.IsVisible = layout.ShowNavigationLabels;
 
+        var navigationAlignment = layout.ShowNavigationLabels
+            ? HorizontalAlignment.Left
+            : HorizontalAlignment.Center;
+
+        BrandRow.HorizontalAlignment = navigationAlignment;
+        NavAccountsButton.HorizontalContentAlignment = navigationAlignment;
+        NavSessionsButton.HorizontalContentAlignment = navigationAlignment;
+        NavUsageButton.HorizontalContentAlignment = navigationAlignment;
+        NavSettingsButton.HorizontalContentAlignment = navigationAlignment;
+        NavDocsButton.HorizontalContentAlignment = navigationAlignment;
+        NavAboutButton.HorizontalContentAlignment = navigationAlignment;
+
         AccountsPane.IsVisible = layout.ShowAccountsPane;
         AccountsToggleButton.IsVisible = layout.ShowAccountsToggle;
         AccountsOverlayScrim.IsVisible = layout.UseAccountsOverlay;
@@ -70,7 +83,7 @@ public partial class MainWindow : Window
             Grid.SetColumn(AccountsPane, 0);
             Grid.SetColumnSpan(AccountsPane, 2);
             AccountsPane.Width = layout.AccountsWidth;
-            AccountsPane.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left;
+            AccountsPane.HorizontalAlignment = HorizontalAlignment.Left;
             AccountsPane.Margin = new Thickness(10);
             AccountsPane.BorderThickness = new Thickness(1);
             AccountsPane.CornerRadius = new CornerRadius(12);
@@ -80,7 +93,7 @@ public partial class MainWindow : Window
             Grid.SetColumn(AccountsPane, 0);
             Grid.SetColumnSpan(AccountsPane, 1);
             AccountsPane.Width = double.NaN;
-            AccountsPane.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch;
+            AccountsPane.HorizontalAlignment = HorizontalAlignment.Stretch;
             AccountsPane.Margin = new Thickness(0);
             AccountsPane.BorderThickness = new Thickness(0, 0, 1, 0);
             AccountsPane.CornerRadius = new CornerRadius(0);
