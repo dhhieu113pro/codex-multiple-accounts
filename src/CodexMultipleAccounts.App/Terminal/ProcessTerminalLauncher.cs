@@ -11,6 +11,7 @@ public sealed class ProcessTerminalLauncher
     {
         Process? process = null;
         TerminalSessionViewModel? vm = null;
+        spec.Environment.TryGetValue("CODEX_HOME", out var codexHome);
 
         try
         {
@@ -37,7 +38,7 @@ public sealed class ProcessTerminalLauncher
 
                 await process.StandardInput.WriteLineAsync(input);
                 await process.StandardInput.FlushAsync();
-            });
+            }, codexHome);
 
             process.OutputDataReceived += (_, e) => AppendLine(vm, e.Data);
             process.ErrorDataReceived += (_, e) => AppendLine(vm, e.Data);
@@ -52,7 +53,7 @@ public sealed class ProcessTerminalLauncher
         catch (Exception ex)
         {
             process?.Dispose();
-            vm ??= new TerminalSessionViewModel(title);
+            vm ??= new TerminalSessionViewModel(title, codexHome: codexHome);
             vm.Output = ex.Message;
         }
 
