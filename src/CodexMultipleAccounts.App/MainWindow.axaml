@@ -11,13 +11,13 @@
   <Grid x:Name="RootShellGrid" ColumnDefinitions="156,*">
     <Border Grid.Column="0"
             Background="{DynamicResource SidebarBrush}"
-            BorderBrush="{DynamicResource BorderBrush}"
+            BorderBrush="{DynamicResource NavigationDividerBrush}"
             BorderThickness="0,0,1,0"
             Padding="10">
       <DockPanel LastChildFill="True">
         <StackPanel DockPanel.Dock="Top" Spacing="6">
-          <StackPanel Orientation="Horizontal" Spacing="10" Margin="3,4,3,17">
-            <Border Width="30" Height="30" CornerRadius="9" Background="#6C3BF5">
+          <StackPanel x:Name="BrandRow" Orientation="Horizontal" Spacing="10" Margin="3,4,3,17">
+            <Border Width="32" Height="32" CornerRadius="9" Background="{DynamicResource PrimaryBrush}">
               <TextBlock Text="C"
                          HorizontalAlignment="Center"
                          VerticalAlignment="Center"
@@ -25,31 +25,31 @@
                          Foreground="White"/>
             </Border>
             <StackPanel x:Name="BrandText" VerticalAlignment="Center" Spacing="0">
-              <TextBlock Text="Codex" FontWeight="SemiBold" FontSize="14"/>
-              <TextBlock Text="Accounts" Classes="muted" FontSize="10"/>
+              <TextBlock Text="Codex" FontWeight="SemiBold" FontSize="14" Foreground="{DynamicResource NavigationForegroundBrush}"/>
+              <TextBlock Text="Multiple accounts" Classes="muted" FontSize="9"/>
             </StackPanel>
           </StackPanel>
 
-          <Button Classes="nav active">
-            <StackPanel Orientation="Horizontal" Spacing="10">
+          <Button x:Name="NavAccountsButton" Classes="nav active" ToolTip.Tip="Accounts">
+            <StackPanel Orientation="Horizontal" Spacing="9">
               <TextBlock Text="◉" Width="18" TextAlignment="Center"/>
               <TextBlock x:Name="NavAccountsText" Text="Accounts" VerticalAlignment="Center"/>
             </StackPanel>
           </Button>
-          <Button Classes="nav" IsEnabled="False">
-            <StackPanel Orientation="Horizontal" Spacing="10">
+          <Button x:Name="NavSessionsButton" Classes="nav" IsEnabled="False" ToolTip.Tip="Sessions">
+            <StackPanel Orientation="Horizontal" Spacing="9">
               <TextBlock Text="▣" Width="18" TextAlignment="Center"/>
               <TextBlock x:Name="NavSessionsText" Text="Sessions" VerticalAlignment="Center"/>
             </StackPanel>
           </Button>
-          <Button Classes="nav" IsEnabled="False">
-            <StackPanel Orientation="Horizontal" Spacing="10">
+          <Button x:Name="NavUsageButton" Classes="nav" IsEnabled="False" ToolTip.Tip="Usage">
+            <StackPanel Orientation="Horizontal" Spacing="9">
               <TextBlock Text="▥" Width="18" TextAlignment="Center"/>
               <TextBlock x:Name="NavUsageText" Text="Usage" VerticalAlignment="Center"/>
             </StackPanel>
           </Button>
-          <Button Classes="nav" IsEnabled="False">
-            <StackPanel Orientation="Horizontal" Spacing="10">
+          <Button x:Name="NavSettingsButton" Classes="nav" IsEnabled="False" ToolTip.Tip="Settings">
+            <StackPanel Orientation="Horizontal" Spacing="9">
               <TextBlock Text="⚙" Width="18" TextAlignment="Center"/>
               <TextBlock x:Name="NavSettingsText" Text="Settings" VerticalAlignment="Center"/>
             </StackPanel>
@@ -57,14 +57,14 @@
         </StackPanel>
 
         <StackPanel DockPanel.Dock="Bottom" Spacing="4" Margin="0,12,0,2">
-          <Button Classes="nav" IsEnabled="False">
-            <StackPanel Orientation="Horizontal" Spacing="10">
+          <Button x:Name="NavDocsButton" Classes="nav" IsEnabled="False" ToolTip.Tip="Documentation">
+            <StackPanel Orientation="Horizontal" Spacing="9">
               <TextBlock Text="▤" Width="18" TextAlignment="Center"/>
               <TextBlock x:Name="NavDocsText" Text="Documentation" VerticalAlignment="Center"/>
             </StackPanel>
           </Button>
-          <Button Classes="nav" IsEnabled="False">
-            <StackPanel Orientation="Horizontal" Spacing="10">
+          <Button x:Name="NavAboutButton" Classes="nav" IsEnabled="False" ToolTip.Tip="About">
+            <StackPanel Orientation="Horizontal" Spacing="9">
               <TextBlock Text="ⓘ" Width="18" TextAlignment="Center"/>
               <TextBlock x:Name="NavAboutText" Text="About" VerticalAlignment="Center"/>
             </StackPanel>
@@ -84,7 +84,7 @@
 
       <Border x:Name="AccountsPane"
               Grid.Column="0"
-              Background="{DynamicResource PanelBrush}"
+              Background="{DynamicResource AccountsSurfaceBrush}"
               BorderBrush="{DynamicResource BorderBrush}"
               BorderThickness="0,0,1,0"
               Padding="16"
