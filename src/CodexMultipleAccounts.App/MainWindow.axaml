@@ -8,7 +8,6 @@
         MinHeight="680"
         Title="Codex Multiple Accounts">
   <Grid ColumnDefinitions="150,410,*">
-    <!-- Navigation rail -->
     <Border Grid.Column="0"
             Background="{DynamicResource SidebarBrush}"
             BorderBrush="{DynamicResource BorderBrush}"
@@ -36,7 +35,6 @@
       </DockPanel>
     </Border>
 
-    <!-- Account list -->
     <Border Grid.Column="1"
             Background="{DynamicResource PanelBrush}"
             BorderBrush="{DynamicResource BorderBrush}"
@@ -82,7 +80,6 @@
                       <TextBlock Grid.Row="0" Grid.Column="0" Text="5-hour limit" FontSize="12"/>
                       <ProgressBar Grid.Row="0" Grid.Column="1" Classes="usage" Minimum="0" Maximum="100" Value="{Binding FiveHourPercent}" Foreground="{Binding Accent}"/>
                       <TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding FiveHourLabel}" FontSize="12" HorizontalAlignment="Right"/>
-
                       <TextBlock Grid.Row="1" Grid.Column="0" Text="Weekly limit" FontSize="12"/>
                       <ProgressBar Grid.Row="1" Grid.Column="1" Classes="usage" Minimum="0" Maximum="100" Value="{Binding WeeklyPercent}" Foreground="{Binding Accent}"/>
                       <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding WeeklyLabel}" FontSize="12" HorizontalAlignment="Right"/>
@@ -119,7 +116,6 @@
       </Grid>
     </Border>
 
-    <!-- Session workspace -->
     <Grid Grid.Column="2" Margin="12" RowDefinitions="*">
       <TabControl ItemsSource="{Binding Sessions}"
                   SelectedItem="{Binding SelectedSession}"
@@ -139,19 +135,21 @@
           <DataTemplate>
             <Border Classes="panel" Margin="0,4,0,0">
               <Grid RowDefinitions="54,*,Auto,42">
-                <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Background="{DynamicResource PanelAltBrush}" Margin="1" Padding="12,8">
-                  <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                    <Border Width="28" Height="28" CornerRadius="6" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
-                      <TextBlock Text=">_" FontFamily="Cascadia Mono,Consolas" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11"/>
-                    </Border>
-                    <TextBlock Text="{Binding CodexHome}" Classes="muted" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
-                  </StackPanel>
-                  <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="7">
-                    <Button Classes="subtle" Content="⛶  Split" IsEnabled="False"/>
-                    <Button Classes="subtle" Content="♲" IsEnabled="False" MinWidth="40"/>
-                    <Button Classes="subtle" Content="⋯" IsEnabled="False" MinWidth="40"/>
-                  </StackPanel>
-                </Grid>
+                <Border Grid.Row="0" Background="{DynamicResource PanelAltBrush}" Margin="1" Padding="12,8">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                      <Border Width="28" Height="28" CornerRadius="6" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                        <TextBlock Text=">_" FontFamily="Cascadia Mono,Consolas" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11"/>
+                      </Border>
+                      <TextBlock Text="{Binding CodexHome}" Classes="muted" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="7">
+                      <Button Classes="subtle" Content="⛶  Split" IsEnabled="False"/>
+                      <Button Classes="subtle" Content="♲" IsEnabled="False" MinWidth="40"/>
+                      <Button Classes="subtle" Content="⋯" IsEnabled="False" MinWidth="40"/>
+                    </StackPanel>
+                  </Grid>
+                </Border>
 
                 <TextBox Grid.Row="1"
                          Text="{Binding Output}"
@@ -164,27 +162,31 @@
                          Foreground="#EAF0F7"
                          BorderThickness="0"
                          Padding="14"
-                         VerticalScrollBarVisibility="Auto"
-                         HorizontalScrollBarVisibility="Auto"/>
+                         ScrollViewer.VerticalScrollBarVisibility="Auto"
+                         ScrollViewer.HorizontalScrollBarVisibility="Auto"/>
 
-                <Grid Grid.Row="2" ColumnDefinitions="*,Auto" Background="{DynamicResource TerminalBrush}" Padding="12,6,12,10">
-                  <TextBox Grid.Column="0"
-                           Text="{Binding Input, UpdateSourceTrigger=PropertyChanged}"
-                           Watermark="Type input for Codex…"
-                           FontFamily="Cascadia Mono,Consolas"
-                           Background="#0C1118"
-                           BorderBrush="{DynamicResource BorderBrush}"
-                           Foreground="#EAF0F7"/>
-                  <Button Grid.Column="1" Margin="8,0,0,0" Classes="primary" Content="Send ↵" Command="{Binding SendCommand}"/>
-                </Grid>
+                <Border Grid.Row="2" Background="{DynamicResource TerminalBrush}" Padding="12,6,12,10">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <TextBox Grid.Column="0"
+                             Text="{Binding Input, UpdateSourceTrigger=PropertyChanged}"
+                             Watermark="Type input for Codex…"
+                             FontFamily="Cascadia Mono,Consolas"
+                             Background="#0C1118"
+                             BorderBrush="{DynamicResource BorderBrush}"
+                             Foreground="#EAF0F7"/>
+                    <Button Grid.Column="1" Margin="8,0,0,0" Classes="primary" Content="Send ↵" Command="{Binding SendCommand}"/>
+                  </Grid>
+                </Border>
 
-                <Grid Grid.Row="3" ColumnDefinitions="*,Auto" Background="{DynamicResource PanelAltBrush}" Padding="12,8">
-                  <TextBlock Text="{Binding StartedAtText}" Classes="muted" FontSize="11" VerticalAlignment="Center"/>
-                  <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="7">
-                    <Border Width="8" Height="8" CornerRadius="4" Background="#24C98A" VerticalAlignment="Center"/>
-                    <TextBlock Text="{Binding CodexHomeText}" Classes="muted" FontSize="11" VerticalAlignment="Center"/>
-                  </StackPanel>
-                </Grid>
+                <Border Grid.Row="3" Background="{DynamicResource PanelAltBrush}" Padding="12,8">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Text="{Binding StartedAtText}" Classes="muted" FontSize="11" VerticalAlignment="Center"/>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="7">
+                      <Border Width="8" Height="8" CornerRadius="4" Background="#24C98A" VerticalAlignment="Center"/>
+                      <TextBlock Text="{Binding CodexHomeText}" Classes="muted" FontSize="11" VerticalAlignment="Center"/>
+                    </StackPanel>
+                  </Grid>
+                </Border>
               </Grid>
             </Border>
           </DataTemplate>
