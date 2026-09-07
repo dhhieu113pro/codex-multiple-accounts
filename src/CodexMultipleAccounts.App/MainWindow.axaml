@@ -3,8 +3,8 @@
         xmlns:terminal="using:AvaloniaTerminal"
         x:Class="CodexMultipleAccounts.App.MainWindow"
         x:Name="RootWindow"
-        Width="1460"
-        Height="880"
+        Width="1000"
+        Height="660"
         MinWidth="760"
         MinHeight="620"
         Title="Codex Multiple Accounts">
