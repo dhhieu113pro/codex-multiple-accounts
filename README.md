@@ -14,8 +14,7 @@ Cross-platform Avalonia manager for running isolated Codex profiles and parallel
 
 ### Codex
 
-- **Isolated launch**: every profile owns a separate Codex home and each child `codex` process receives its own `CODEX_HOME`. Multiple profiles can therefore run concurrently without swapping the parent/global environment.
-- **Activate globally**: explicitly promotes a selected Codex profile into the normal `~/.codex` home for editor integrations, backing up the previous default state first.
+- **Isolated launch**: every profile owns a separate Codex home and each child `codex` process receives its own `CODEX_HOME`. Multiple profiles can therefore run concurrently without changing the user's default Codex state.
 - Embedded PTY and external-terminal launch remain available.
 
 ### Antigravity

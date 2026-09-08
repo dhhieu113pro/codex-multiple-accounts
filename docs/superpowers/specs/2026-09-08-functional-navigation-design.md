@@ -28,7 +28,7 @@ The page displays provider/profile names and quota status using an explicit unav
 
 ## Documentation and About
 
-Documentation provides local guidance for installing Codex/Antigravity, creating/importing profiles, choosing a workspace, isolated versus global activation, and terminal troubleshooting. Link to the official CLI documentation and application repository. Explain Antigravity filesystem isolation and shared OS credential-store limitations, and state that Shared mode is not a guarantee of independent authentication. About reads version from assembly metadata, displays OS/runtime information, and exposes verified repository and license links. If license metadata is unavailable, report that rather than claiming a license.
+Documentation provides local guidance for installing Codex/Antigravity, creating/importing profiles, choosing a workspace, isolated launches, and terminal troubleshooting. Link to the official CLI documentation and application repository. Explain Antigravity filesystem isolation and shared OS credential-store limitations, and state that Shared mode is not a guarantee of independent authentication. About reads version from assembly metadata, displays OS/runtime information, and exposes verified repository and license links. If license metadata is unavailable, report that rather than claiming a license.
 
 ## Safety and error handling
 

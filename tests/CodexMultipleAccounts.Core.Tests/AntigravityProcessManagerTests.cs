@@ -10,7 +10,7 @@ public sealed class AntigravityProcessManagerTests
     {
         var runner = new FakeProcessRunner();
         var manager = new AntigravityProcessManager(runner);
-        var profile = new CodexProfile(Guid.NewGuid(), "AG", "/tmp/ag", null, false, AccountProvider.Antigravity, AntigravityProfileMode.Full);
+        var profile = new CodexProfile(Guid.NewGuid(), "AG", "/tmp/ag", null, AccountProvider.Antigravity, AntigravityProfileMode.Full);
         var spec = new AntigravityLaunchSpec("antigravity", [], "/tmp", new Dictionary<string,string>(), false);
 
         var first = manager.Start(profile, spec);

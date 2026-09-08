@@ -50,7 +50,7 @@ public sealed class AppSettingsTests
     public void Configured_codex_executable_and_workspace_are_child_only()
     {
         using var temp = new TempDirectory();
-        var profile = new CodexProfile(Guid.NewGuid(), "Work", Path.Combine(temp.Path, "home"), null, false);
+        var profile = new CodexProfile(Guid.NewGuid(), "Work", Path.Combine(temp.Path, "home"), null);
         var before = Environment.GetEnvironmentVariable("CODEX_HOME");
         var spec = new CodexLaunchService().Create(profile, temp.Path, executable: "custom-codex");
         Assert.Equal("custom-codex", spec.Executable);

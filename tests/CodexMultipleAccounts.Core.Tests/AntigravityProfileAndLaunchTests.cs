@@ -11,7 +11,7 @@ public sealed class AntigravityProfileAndLaunchTests
     {
         var id = Guid.NewGuid();
         var json = $$"""
-        {"Id":"{{id}}","Name":"Legacy","CodexHome":"/tmp/legacy","LastUsedAt":null,"IsGloballyActive":false}
+        {"Id":"{{id}}","Name":"Legacy","CodexHome":"/tmp/legacy","LastUsedAt":null}
         """;
 
         var profile = JsonSerializer.Deserialize<CodexProfile>(json)!;
@@ -80,5 +80,5 @@ public sealed class AntigravityProfileAndLaunchTests
     }
 
     private static CodexProfile AntigravityProfile(string root) =>
-        new(Guid.NewGuid(), "AG", Path.Combine(root, "ag-home"), null, false, AccountProvider.Antigravity, AntigravityProfileMode.Full);
+        new(Guid.NewGuid(), "AG", Path.Combine(root, "ag-home"), null, AccountProvider.Antigravity, AntigravityProfileMode.Full);
 }

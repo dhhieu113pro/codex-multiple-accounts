@@ -5,7 +5,6 @@ public sealed record CodexProfile(
     string Name,
     string CodexHome,
     DateTimeOffset? LastUsedAt,
-    bool IsGloballyActive,
     AccountProvider Provider = AccountProvider.Codex,
     AntigravityProfileMode? AntigravityMode = null)
 {

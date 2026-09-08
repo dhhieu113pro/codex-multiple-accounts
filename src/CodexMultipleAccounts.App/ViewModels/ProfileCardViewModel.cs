@@ -16,7 +16,6 @@ public sealed class ProfileCardViewModel(
     public string Name => Profile.Name;
     public string CodexHome => Profile.CodexHome;
     public string ProfileHome => Profile.ProfileHome;
-    public bool IsGloballyActive => Profile.IsGloballyActive;
     public bool IsCodex => Profile.Provider == AccountProvider.Codex;
     public bool IsAntigravity => Profile.Provider == AccountProvider.Antigravity;
     public bool IsRunning { get; } = isRunning;

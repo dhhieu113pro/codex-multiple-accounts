@@ -1,6 +1,5 @@
 using System.Collections.ObjectModel;
 using CodexMultipleAccounts.App.Terminal;
-using CodexMultipleAccounts.Core.Activation;
 using CodexMultipleAccounts.Core.Launching;
 using CodexMultipleAccounts.Core.Profiles;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -17,7 +16,6 @@ public partial class MainWindowViewModel : ObservableObject
     private readonly CodexLaunchService _launch = new();
     private readonly AntigravityLaunchService _antigravityLaunch = new();
     private readonly AntigravityProcessManager _antigravityProcesses = new();
-    private readonly GlobalActivationService _activation;
     private readonly ProcessTerminalLauncher _embedded = new();
     private readonly ExternalTerminalLauncher _external = new();
 
@@ -41,7 +39,6 @@ public partial class MainWindowViewModel : ObservableObject
     {
         _profiles = new ProfileService(root, defaultHome);
         _antigravityProfiles = new AntigravityProfileService(_profiles);
-        _activation = new GlobalActivationService(_profiles, root, defaultHome);
 
         if (Environment.GetEnvironmentVariable("CODEX_MULTIPLE_ACCOUNTS_SCREENSHOT") == "1")
             LoadScreenshotDemo();
@@ -52,9 +49,9 @@ public partial class MainWindowViewModel : ObservableObject
     private void LoadScreenshotDemo()
     {
         var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        var personal = new CodexProfile(Guid.Parse("11111111-1111-1111-1111-111111111111"), "Personal", Path.Combine(home, ".codex-profiles", "personal"), DateTimeOffset.Now, true);
-        var work = new CodexProfile(Guid.Parse("22222222-2222-2222-2222-222222222222"), "Work", Path.Combine(home, ".codex-profiles", "work"), DateTimeOffset.Now.AddMinutes(-18), false);
-        var antigravity = new CodexProfile(Guid.Parse("33333333-3333-3333-3333-333333333333"), "Antigravity Work", Path.Combine(home, ".antigravity-profiles", "work"), DateTimeOffset.Now.AddHours(-2), false, AccountProvider.Antigravity, AntigravityProfileMode.Full);
+        var personal = new CodexProfile(Guid.Parse("11111111-1111-1111-1111-111111111111"), "Personal", Path.Combine(home, ".codex-profiles", "personal"), DateTimeOffset.Now);
+        var work = new CodexProfile(Guid.Parse("22222222-2222-2222-2222-222222222222"), "Work", Path.Combine(home, ".codex-profiles", "work"), DateTimeOffset.Now.AddMinutes(-18));
+        var antigravity = new CodexProfile(Guid.Parse("33333333-3333-3333-3333-333333333333"), "Antigravity Work", Path.Combine(home, ".antigravity-profiles", "work"), DateTimeOffset.Now.AddHours(-2), AccountProvider.Antigravity, AntigravityProfileMode.Full);
 
         Profiles.Add(personal);
         Profiles.Add(work);
@@ -212,28 +209,6 @@ public partial class MainWindowViewModel : ObservableObject
         StartAntigravity(card, restart: true);
     }
 
-    [RelayCommand(CanExecute = nameof(HasSelection))]
-    private async Task Activate() => await ActivateProfile(SelectedProfileCard);
-
-    [RelayCommand]
-    private async Task ActivateProfile(ProfileCardViewModel? card)
-    {
-        if (card is null)
-            return;
-
-        Select(card);
-        if (!card.IsCodex)
-        {
-            Status = "Global activation is only available for Codex. Antigravity uses filesystem-isolated launch profiles.";
-            return;
-        }
-
-        var profile = card.Profile;
-        await _activation.ActivateAsync(profile);
-        await ReloadAsync();
-        Status = $"{profile.Name} is now globally active. Existing default state was backed up.";
-    }
-
     private void StartAntigravity(ProfileCardViewModel card, bool restart)
     {
         var profile = card.Profile;
@@ -264,6 +239,5 @@ public partial class MainWindowViewModel : ObservableObject
         SelectedProfile = value?.Profile;
         LaunchCommand.NotifyCanExecuteChanged();
         ExternalCommand.NotifyCanExecuteChanged();
-        ActivateCommand.NotifyCanExecuteChanged();
     }
 }

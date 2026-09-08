@@ -52,7 +52,7 @@ public sealed class ProfileAndLaunchTests
     public async Task LaunchSpec_UsesChildOnlyCodexHome()
     {
         using var temp = new TempDirectory();
-        var profile = new CodexProfile(Guid.NewGuid(), "Work", Path.Combine(temp.Path, "work"), null, false);
+        var profile = new CodexProfile(Guid.NewGuid(), "Work", Path.Combine(temp.Path, "work"), null);
         var before = Environment.GetEnvironmentVariable("CODEX_HOME");
         var spec = new CodexLaunchService().Create(profile, temp.Path, ["--help"]);
         Assert.Equal(profile.CodexHome, spec.Environment["CODEX_HOME"]);
