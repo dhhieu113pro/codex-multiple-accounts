@@ -1,6 +1,8 @@
 <Solution>
   <Project Path="src/CodexMultipleAccounts.Core/CodexMultipleAccounts.Core.csproj" />
+  <Folder Name="/Tests/">
+    <Project Path="tests/CodexMultipleAccounts.App.Tests/CodexMultipleAccounts.App.Tests.csproj" />
+    <Project Path="tests/CodexMultipleAccounts.Core.Tests/CodexMultipleAccounts.Core.Tests.csproj" />
+  </Folder>
   <Project Path="src/CodexMultipleAccounts.App/CodexMultipleAccounts.App.csproj" />
-  <Project Path="tests/CodexMultipleAccounts.Core.Tests/CodexMultipleAccounts.Core.Tests.csproj" />
-  <Project Path="tests/CodexMultipleAccounts.App.Tests/CodexMultipleAccounts.App.Tests.csproj" />
 </Solution>
