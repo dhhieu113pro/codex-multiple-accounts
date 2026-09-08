@@ -1,0 +1,3 @@
+# Terminal workspace and lifecycle
+
+Approved scope: functional terminal Stop/Close, a persisted workspace folder for future embedded and external Codex launches, and a centered 1000×800 startup window clamped to the available screen. Closing a running session requires confirmation; exited sessions close immediately. Process ownership must be session-scoped and external terminals must remain untouched. Account credential isolation must remain independent of the workspace. Add regression tests for cancellation, session cleanup, workspace persistence/launch selection, and window bounds. Do not merge without review.
