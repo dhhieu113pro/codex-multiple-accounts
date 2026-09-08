@@ -118,21 +118,18 @@ public partial class MainWindowViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task CreateAntigravityFull()
+    private async Task CreateAntigravity()
     {
-        var created = await _antigravityProfiles.CreateAsync("Antigravity " + (Profiles.Count(x => x.Provider == AccountProvider.Antigravity) + 1), AntigravityProfileMode.Full);
-        SelectedProfile = created;
-        await ReloadAsync();
-        Status = "Antigravity Full profile created. Filesystem state is isolated; OS credential-store authentication is shared.";
-    }
+        if (Profiles.Any(x => x.Provider == AccountProvider.Antigravity))
+        {
+            Status = "Only one Antigravity profile is supported.";
+            return;
+        }
 
-    [RelayCommand]
-    private async Task CreateAntigravityShared()
-    {
-        var created = await _antigravityProfiles.CreateAsync("Antigravity Shared " + (Profiles.Count(x => x.Provider == AccountProvider.Antigravity) + 1), AntigravityProfileMode.Shared);
+        var created = await _antigravityProfiles.CreateAsync("Antigravity");
         SelectedProfile = created;
         await ReloadAsync();
-        Status = "Antigravity Shared profile created. Filesystem state is isolated; OS credential-store authentication is shared.";
+        Status = "Antigravity profile created. Filesystem state is isolated; OS credential-store authentication is shared.";
     }
 
     [RelayCommand]
@@ -163,9 +160,38 @@ public partial class MainWindowViewModel : ObservableObject
         var profile = card.Profile;
         var spec = _launch.Create(profile, Environment.CurrentDirectory);
         var session = _embedded.Launch(profile.Name, spec);
+        session.CloseRequested += CloseSession;
         Sessions.Add(session);
         SelectedSession = session;
         Status = $"Launched {profile.Name} with isolated CODEX_HOME.";
+    }
+
+    [RelayCommand]
+    private async Task DeleteProfile(ProfileCardViewModel? card)
+    {
+        if (card is null)
+            return;
+
+        if (card.IsAntigravity)
+            _antigravityProcesses.Stop(card.Profile.Id);
+
+        var session = Sessions.FirstOrDefault(x => x.Title == card.Name && x.IsRunning);
+        if (session is not null)
+            CloseSession(session);
+
+        await _profiles.DeleteAsync(card.Profile.Id);
+        await ReloadAsync();
+        Status = $"Deleted {card.Name}.";
+    }
+
+    private void CloseSession(TerminalSessionViewModel session)
+    {
+        _embedded.Stop(session);
+        session.CloseRequested -= CloseSession;
+        Sessions.Remove(session);
+        if (SelectedSession == session)
+            SelectedSession = Sessions.LastOrDefault();
+        Status = $"Closed {session.Title} session.";
     }
 
     [RelayCommand(CanExecute = nameof(HasSelection))]
@@ -216,10 +242,18 @@ public partial class MainWindowViewModel : ObservableObject
         var executable = AntigravityExecutableLocator.Resolve(platform);
         var spec = _antigravityLaunch.Create(profile, platform, executable, Environment.CurrentDirectory);
 
-        if (restart)
-            _antigravityProcesses.Restart(profile, spec);
-        else
-            _antigravityProcesses.Start(profile, spec);
+        try
+        {
+            if (restart)
+                _antigravityProcesses.Restart(profile, spec);
+            else
+                _antigravityProcesses.Start(profile, spec);
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or System.ComponentModel.Win32Exception)
+        {
+            Status = $"Could not launch {profile.Name}: {ex.Message}";
+            return;
+        }
 
         RebuildCards();
         SelectedProfileCard = ProfileCards.FirstOrDefault(x => x.Profile.Id == profile.Id);

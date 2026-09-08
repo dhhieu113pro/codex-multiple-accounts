@@ -48,16 +48,22 @@ public sealed class ProfileAndLaunchTests
         Assert.Empty(Directory.EnumerateDirectories(profilesRoot));
     }
 
-    [Fact]
-    public async Task LaunchSpec_UsesChildOnlyCodexHome()
+    [Theory]
+    [InlineData(HostPlatform.Windows)]
+    [InlineData(HostPlatform.Linux)]
+    [InlineData(HostPlatform.MacOS)]
+    public void LaunchSpec_UsesChildOnlyCodexHome_OnEverySupportedPlatform(HostPlatform platform)
     {
+        Assert.True(Enum.IsDefined(platform));
         using var temp = new TempDirectory();
         var profile = new CodexProfile(Guid.NewGuid(), "Work", Path.Combine(temp.Path, "work"), null);
         var before = Environment.GetEnvironmentVariable("CODEX_HOME");
-        var spec = new CodexLaunchService().Create(profile, temp.Path, ["--help"]);
+        var spec = new CodexLaunchService().Create(profile, temp.Path);
         Assert.Equal(profile.CodexHome, spec.Environment["CODEX_HOME"]);
         Assert.Equal(before, Environment.GetEnvironmentVariable("CODEX_HOME"));
         Assert.Equal("codex", spec.Executable);
+        Assert.Empty(spec.Arguments);
+        Assert.Equal(Path.GetFullPath(temp.Path), spec.WorkingDirectory);
     }
 }
 

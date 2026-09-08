@@ -26,6 +26,7 @@ public partial class TerminalSessionViewModel : ObservableObject
     public string CodexHome { get; }
     public DateTimeOffset StartedAt { get; }
     public TerminalControlModel TerminalModel { get; }
+    public event Action<TerminalSessionViewModel>? CloseRequested;
     public string StartedAtText => $"Session started at {StartedAt:HH:mm:ss}";
     public string CodexHomeText => string.IsNullOrWhiteSpace(CodexHome) ? "CODEX_HOME" : $"CODEX_HOME: {CodexHome}";
 
@@ -63,4 +64,7 @@ public partial class TerminalSessionViewModel : ObservableObject
     }
 
     private bool CanSend() => _sendInput is not null && IsRunning;
+
+    [RelayCommand]
+    private void Close() => CloseRequested?.Invoke(this);
 }

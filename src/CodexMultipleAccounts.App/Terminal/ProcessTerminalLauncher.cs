@@ -9,6 +9,7 @@ public sealed class ProcessTerminalLauncher
 {
     private const int InitialCols = 120;
     private const int InitialRows = 30;
+    private readonly Dictionary<TerminalSessionViewModel, IPtyConnection> _terminals = [];
 
     public TerminalSessionViewModel Launch(string title, CodexLaunchSpec spec)
     {
@@ -53,12 +54,20 @@ public sealed class ProcessTerminalLauncher
         _ = StartAsync(vm, spec, connection =>
         {
             terminal = connection;
+            _terminals[vm] = connection;
             TryResize(connection, cols, rows);
         });
         return vm;
     }
 
-    private static async Task StartAsync(
+    public void Stop(TerminalSessionViewModel session)
+    {
+        if (_terminals.Remove(session, out var terminal))
+            terminal.Dispose();
+        session.MarkExited(-1);
+    }
+
+    private async Task StartAsync(
         TerminalSessionViewModel vm,
         CodexLaunchSpec spec,
         Action<IPtyConnection> onStarted)
@@ -95,6 +104,7 @@ public sealed class ProcessTerminalLauncher
         }
         finally
         {
+            _terminals.Remove(vm);
             terminal?.Dispose();
         }
     }

@@ -9,8 +9,8 @@ public sealed class AntigravityProfileService
     public async Task<IReadOnlyList<CodexProfile>> ListAsync() =>
         (await _profiles.ListAsync()).Where(x => x.Provider == AccountProvider.Antigravity).ToArray();
 
-    public Task<CodexProfile> CreateAsync(string name, AntigravityProfileMode mode) =>
-        _profiles.CreateManagedAsync(name, AccountProvider.Antigravity, mode, "antigravity-home");
+    public Task<CodexProfile> CreateAsync(string name) =>
+        _profiles.CreateManagedAsync(name, AccountProvider.Antigravity, AntigravityProfileMode.Full, "antigravity-home");
 
     public Task DeleteAsync(Guid id) => _profiles.DeleteAsync(id);
 }

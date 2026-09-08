@@ -19,6 +19,10 @@ public sealed class AntigravityLaunchService
                 env["USERPROFILE"] = home;
                 env["APPDATA"] = Path.Combine(home, "AppData", "Roaming");
                 env["LOCALAPPDATA"] = Path.Combine(home, "AppData", "Local");
+                AddDataArguments(
+                    args,
+                    Path.Combine(home, "AppData", "Local", "Antigravity", "User Data"),
+                    Path.Combine(home, "AppData", "Local", "Antigravity", "Extensions"));
                 break;
             case HostPlatform.Linux:
                 env["HOME"] = home;

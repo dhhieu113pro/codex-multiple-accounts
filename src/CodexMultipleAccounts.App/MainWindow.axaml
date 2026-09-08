@@ -107,8 +107,7 @@
 
             <StackPanel Orientation="Horizontal" Spacing="6">
               <Button Classes="primary compact" Content="＋ Codex" Command="{Binding CreateCommand}"/>
-              <Button Classes="subtle compact" Content="＋ AG Full" Command="{Binding CreateAntigravityFullCommand}"/>
-              <Button Classes="ghost compact" Content="AG Shared" Command="{Binding CreateAntigravitySharedCommand}"/>
+              <Button Classes="subtle compact" Content="＋ Antigravity" Command="{Binding CreateAntigravityCommand}"/>
             </StackPanel>
           </StackPanel>
 
@@ -153,8 +152,10 @@
 
                         <Button Grid.Column="2"
                                 Classes="ghost compact icon"
-                                Content="⋯"
-                                IsEnabled="False"
+                                Content="×"
+                                Command="{Binding #RootWindow.DataContext.DeleteProfileCommand}"
+                                CommandParameter="{Binding}"
+                                ToolTip.Tip="Delete account"
                                 Margin="6,-4,-5,0"/>
                       </Grid>
 
@@ -285,6 +286,10 @@
                 <Border Width="7" Height="7" CornerRadius="4" Background="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
                 <TextBlock Text="{Binding Title}" VerticalAlignment="Center" FontSize="11"/>
                 <TextBlock Text="×" Classes="muted" Margin="6,0,0,0"/>
+                <Button Content="Close"
+                        Classes="ghost compact"
+                        Command="{Binding CloseCommand}"
+                        ToolTip.Tip="Close terminal"/>
               </StackPanel>
             </DataTemplate>
           </TabControl.ItemTemplate>

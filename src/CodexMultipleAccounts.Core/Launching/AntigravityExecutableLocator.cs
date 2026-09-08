@@ -6,13 +6,22 @@ public static class AntigravityExecutableLocator
     {
         var configured = Environment.GetEnvironmentVariable("ANTIGRAVITY_EXECUTABLE");
         if (!string.IsNullOrWhiteSpace(configured))
-            return configured;
+            return configured.Trim().Trim('"');
 
         return platform switch
         {
             HostPlatform.Windows => ResolveFirstExisting(
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "Antigravity", "Antigravity.exe"),
-                "Antigravity.exe"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "Antigravity", "Agy.exe"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Antigravity", "Antigravity.exe"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Antigravity", "Agy.exe"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Antigravity", "Antigravity.exe"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Antigravity", "Agy.exe"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Antigravity", "bin", "Antigravity.exe"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Antigravity", "bin", "Agy.exe"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Antigravity", "Antigravity.exe"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Antigravity", "Agy.exe"),
+                "Agy.exe"),
             HostPlatform.MacOS => ResolveFirstExisting(
                 "/Applications/Antigravity.app/Contents/MacOS/Antigravity",
                 "antigravity"),
