@@ -51,31 +51,45 @@ public static class Program
         switch (args[0].ToLowerInvariant())
         {
             case "list":
+                var providerOption = GetOption(args[1..], "--provider");
+                var providerFilter = providerOption is null ? null : ParseProvider(providerOption).ToString();
                 foreach (var profile in await profiles.ListAsync())
+                {
+                    if (providerFilter is not null && !string.Equals(profile.Provider.ToString(), providerFilter, StringComparison.OrdinalIgnoreCase))
+                        continue;
                     Console.WriteLine($"{profile.Id}\t{profile.Name}\t{profile.Provider}\t{profile.CodexHome}");
+                }
                 return 0;
 
             case "create":
-                Require(args, 2, "profile create <name>");
-                var created = await profiles.CreateAsync(string.Join(' ', args[1..]));
+                var createProvider = ParseProvider(GetOption(args[1..], "--provider") ?? "codex");
+                var createName = ValuesWithoutOption(args[1..], "--provider");
+                Require(createName, "profile create <name> [--provider codex|antigravity]");
+                var created = createProvider == AccountProvider.Antigravity
+                    ? await new AntigravityProfileService(profiles).CreateAsync(string.Join(' ', createName))
+                    : await profiles.CreateAsync(string.Join(' ', createName));
                 Console.WriteLine($"Created {created.Name} ({created.Id}).");
                 return 0;
 
             case "import":
-                Require(args, 2, "profile import <name>");
-                var imported = await profiles.ImportDefaultAsync(string.Join(' ', args[1..]));
+                var importProvider = ParseProvider(GetOption(args[1..], "--provider") ?? "codex");
+                if (importProvider != AccountProvider.Codex)
+                    throw new ArgumentException("Only Codex profiles can import the default Codex home.");
+                var importName = ValuesWithoutOption(args[1..], "--provider");
+                Require(importName, "profile import <name> [--provider codex]");
+                var imported = await profiles.ImportDefaultAsync(string.Join(' ', importName));
                 Console.WriteLine($"Imported default Codex home into {imported.Name} ({imported.Id}).");
                 return 0;
 
             case "rename":
-                Require(args, 3, "profile rename <id|name> <new-name>");
+                Require(args[1..], "profile rename <id|name> <new-name>");
                 var renameTarget = await FindProfileAsync(profiles, args[1]);
                 await profiles.RenameAsync(renameTarget.Id, string.Join(' ', args[2..]));
                 Console.WriteLine($"Renamed {renameTarget.Name}.");
                 return 0;
 
             case "delete":
-                Require(args, 2, "profile delete <id|name>");
+                Require(args[1..], "profile delete <id|name>");
                 var deleteTarget = await FindProfileAsync(profiles, args[1]);
                 await profiles.DeleteAsync(deleteTarget.Id);
                 Console.WriteLine($"Deleted {deleteTarget.Name}.");
@@ -129,11 +143,43 @@ public static class Program
             ?? throw new KeyNotFoundException($"Profile not found: {value}");
     }
 
-    private static void Require(string[] args, int count, string usage)
+    private static void Require(string[] args, string usage)
     {
-        if (args.Length < count)
+        if (args.Length == 0 || args.All(string.IsNullOrWhiteSpace))
             throw new ArgumentException($"Usage: {usage}");
     }
+
+    private static string? GetOption(string[] args, string option)
+    {
+        var index = Array.FindIndex(args, value => string.Equals(value, option, StringComparison.OrdinalIgnoreCase));
+        if (index < 0)
+            return null;
+        if (index + 1 >= args.Length || args[index + 1].StartsWith("--", StringComparison.Ordinal))
+            throw new ArgumentException($"Option {option} requires a value.");
+        return args[index + 1];
+    }
+
+    private static string[] ValuesWithoutOption(string[] args, string option)
+    {
+        var values = new List<string>();
+        for (var index = 0; index < args.Length; index++)
+        {
+            if (string.Equals(args[index], option, StringComparison.OrdinalIgnoreCase))
+            {
+                index++;
+                continue;
+            }
+            values.Add(args[index]);
+        }
+        return values.ToArray();
+    }
+
+    private static AccountProvider ParseProvider(string value) => value.ToLowerInvariant() switch
+    {
+        "codex" => AccountProvider.Codex,
+        "antigravity" => AccountProvider.Antigravity,
+        _ => throw new ArgumentException($"Unknown provider '{value}'. Supported providers: codex, antigravity.")
+    };
 
     private static bool IsHelp(string value) => value is "-h" or "--help" or "help";
 
@@ -148,13 +194,25 @@ public static class Program
         CodexMultipleAccounts.Dnx
 
         Usage:
-          dnx profile list
-          dnx profile create <name>
-          dnx profile import <name>
+          dnx profile list [--provider codex|antigravity]
+          dnx profile create <name> [--provider codex|antigravity]
+          dnx profile import <name> [--provider codex]
           dnx profile rename <id|name> <new-name>
           dnx profile delete <id|name>
           dnx login <id|name>
           dnx launch <id|name> [workspace] [-- codex-arguments]
+
+        Examples:
+          dnx profile create Personal --provider codex
+          dnx profile create Work --provider antigravity
+          dnx profile list --provider antigravity
+          dnx login Personal
+          dnx launch Personal ./workspace
+          dnx launch Personal ./workspace -- --model gpt-5
+
+        Notes:
+          Provider is stored on each profile, so login and launch infer it from the profile.
+          Default Codex-home import is supported only for the Codex provider.
 
         Environment:
           CODEX_MULTIPLE_ACCOUNTS_ROOT  Override the profile catalog root.
