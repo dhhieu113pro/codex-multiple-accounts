@@ -1,0 +1,71 @@
+name: Publish Dnx
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: NuGet package version (for example, 0.1.0)
+        required: true
+        type: string
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Resolve package version
+        id: version
+        shell: bash
+        run: |
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            version="${GITHUB_REF_NAME#v}"
+          else
+            version="${{ inputs.version }}"
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Restore CLI
+        run: dotnet restore src/CodexMultipleAccounts.Dnx/CodexMultipleAccounts.Dnx.csproj
+
+      - name: Pack CLI tool
+        run: >-
+          dotnet pack src/CodexMultipleAccounts.Dnx/CodexMultipleAccounts.Dnx.csproj
+          --configuration Release
+          --no-restore
+          --output artifacts/packages
+          -p:PackageVersion=${{ steps.version.outputs.version }}
+
+      - name: Upload package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: codex-multiple-accounts-dnx-${{ steps.version.outputs.version }}
+          path: artifacts/packages/*.nupkg
+          if-no-files-found: error
+
+      - name: Log in to NuGet.org
+        id: nuget-login
+        uses: NuGet/login@v1
+        with:
+          user: dhhieu113
+
+      - name: Publish package
+        run: >-
+          dotnet nuget push artifacts/packages/*.nupkg
+          --source https://api.nuget.org/v3/index.json
+          --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}"
+          --skip-duplicate

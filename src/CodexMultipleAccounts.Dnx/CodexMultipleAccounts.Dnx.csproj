@@ -3,9 +3,18 @@
     <OutputType>Exe</OutputType>
     <AssemblyName>CodexMultipleAccounts.Dnx</AssemblyName>
     <RootNamespace>CodexMultipleAccounts.Dnx</RootNamespace>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>codex-multiple-accounts</ToolCommandName>
+    <PackageId>CodexMultipleAccounts.Dnx</PackageId>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <Authors>dhhieu113</Authors>
+    <Description>CLI for managing isolated Codex accounts and launching Codex in workspaces.</Description>
+    <PackageTags>codex;cli;dnx;accounts;workspace</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="../CodexMultipleAccounts.Core/CodexMultipleAccounts.Core.csproj" />
+    <None Include="../../README.md" Pack="true" PackagePath="README.md" />
   </ItemGroup>
 </Project>
