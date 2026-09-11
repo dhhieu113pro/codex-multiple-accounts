@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>CodexMultipleAccounts.Dnx</AssemblyName>
+    <RootNamespace>CodexMultipleAccounts.Dnx</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../CodexMultipleAccounts.Core/CodexMultipleAccounts.Core.csproj" />
+  </ItemGroup>
+</Project>

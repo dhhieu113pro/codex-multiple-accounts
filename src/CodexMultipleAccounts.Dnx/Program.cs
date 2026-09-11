@@ -1,0 +1,163 @@
+using System.Diagnostics;
+using CodexMultipleAccounts.Core.Launching;
+using CodexMultipleAccounts.Core.Profiles;
+
+namespace CodexMultipleAccounts.Dnx;
+
+public static class Program
+{
+    private static readonly string Root = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        "CodexMultipleAccounts");
+
+    public static async Task<int> Main(string[] args)
+    {
+        try
+        {
+            if (args.Length == 0 || IsHelp(args[0]))
+            {
+                PrintHelp();
+                return 0;
+            }
+
+            var profiles = new ProfileService(
+                Environment.GetEnvironmentVariable("CODEX_MULTIPLE_ACCOUNTS_ROOT") ?? Root,
+                Environment.GetEnvironmentVariable("CODEX_HOME") ?? Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".codex"));
+
+            return args[0].ToLowerInvariant() switch
+            {
+                "profile" => await ProfileCommandAsync(profiles, args[1..]),
+                "login" => await LaunchCommandAsync(profiles, args[1..], login: true),
+                "launch" => await LaunchCommandAsync(profiles, args[1..], login: false),
+                _ => UsageError($"Unknown command '{args[0]}'.")
+            };
+        }
+        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or KeyNotFoundException or DirectoryNotFoundException)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
+            return 1;
+        }
+    }
+
+    private static async Task<int> ProfileCommandAsync(ProfileService profiles, string[] args)
+    {
+        if (args.Length == 0 || IsHelp(args[0]))
+        {
+            Console.WriteLine("Usage: profile <list|create|import|rename|delete> ...");
+            return 0;
+        }
+
+        switch (args[0].ToLowerInvariant())
+        {
+            case "list":
+                foreach (var profile in await profiles.ListAsync())
+                    Console.WriteLine($"{profile.Id}\t{profile.Name}\t{profile.Provider}\t{profile.CodexHome}");
+                return 0;
+
+            case "create":
+                Require(args, 2, "profile create <name>");
+                var created = await profiles.CreateAsync(string.Join(' ', args[1..]));
+                Console.WriteLine($"Created {created.Name} ({created.Id}).");
+                return 0;
+
+            case "import":
+                Require(args, 2, "profile import <name>");
+                var imported = await profiles.ImportDefaultAsync(string.Join(' ', args[1..]));
+                Console.WriteLine($"Imported default Codex home into {imported.Name} ({imported.Id}).");
+                return 0;
+
+            case "rename":
+                Require(args, 3, "profile rename <id|name> <new-name>");
+                var renameTarget = await FindProfileAsync(profiles, args[1]);
+                await profiles.RenameAsync(renameTarget.Id, string.Join(' ', args[2..]));
+                Console.WriteLine($"Renamed {renameTarget.Name}.");
+                return 0;
+
+            case "delete":
+                Require(args, 2, "profile delete <id|name>");
+                var deleteTarget = await FindProfileAsync(profiles, args[1]);
+                await profiles.DeleteAsync(deleteTarget.Id);
+                Console.WriteLine($"Deleted {deleteTarget.Name}.");
+                return 0;
+
+            default:
+                return UsageError($"Unknown profile command '{args[0]}'.");
+        }
+    }
+
+    private static async Task<int> LaunchCommandAsync(ProfileService profiles, string[] args, bool login)
+    {
+        if (args.Length == 0 || IsHelp(args[0]))
+        {
+            Console.WriteLine(login
+                ? "Usage: login <profile-id|name>"
+                : "Usage: launch <profile-id|name> [workspace] [-- codex-arguments]");
+            return 0;
+        }
+
+        var profile = await FindProfileAsync(profiles, args[0]);
+        var separator = Array.IndexOf(args, "--");
+        var workspace = separator > 0 && separator > 1 ? args[1] : (separator < 0 && args.Length > 1 ? args[1] : Environment.CurrentDirectory);
+        workspace = Path.GetFullPath(workspace);
+        if (!Directory.Exists(workspace))
+            throw new DirectoryNotFoundException($"Workspace directory does not exist: {workspace}");
+
+        var codexArguments = login ? new[] { "login" } : separator >= 0 ? args[(separator + 1)..] : [];
+        var spec = new CodexLaunchService().Create(profile, workspace, codexArguments);
+        var startInfo = new ProcessStartInfo(spec.Executable)
+        {
+            WorkingDirectory = spec.WorkingDirectory,
+            UseShellExecute = false
+        };
+        foreach (var argument in spec.Arguments)
+            startInfo.ArgumentList.Add(argument);
+        foreach (var variable in spec.Environment)
+            startInfo.Environment[variable.Key] = variable.Value;
+
+        using var process = Process.Start(startInfo) ?? throw new InvalidOperationException("Could not start Codex.");
+        await process.WaitForExitAsync();
+        return process.ExitCode;
+    }
+
+    private static async Task<CodexProfile> FindProfileAsync(ProfileService profiles, string value)
+    {
+        var all = await profiles.ListAsync();
+        if (Guid.TryParse(value, out var id))
+            return all.SingleOrDefault(x => x.Id == id) ?? throw new KeyNotFoundException($"Profile not found: {value}");
+        return all.SingleOrDefault(x => string.Equals(x.Name, value, StringComparison.OrdinalIgnoreCase))
+            ?? throw new KeyNotFoundException($"Profile not found: {value}");
+    }
+
+    private static void Require(string[] args, int count, string usage)
+    {
+        if (args.Length < count)
+            throw new ArgumentException($"Usage: {usage}");
+    }
+
+    private static bool IsHelp(string value) => value is "-h" or "--help" or "help";
+
+    private static int UsageError(string message)
+    {
+        Console.Error.WriteLine(message);
+        PrintHelp();
+        return 2;
+    }
+
+    private static void PrintHelp() => Console.WriteLine("""
+        CodexMultipleAccounts.Dnx
+
+        Usage:
+          dnx profile list
+          dnx profile create <name>
+          dnx profile import <name>
+          dnx profile rename <id|name> <new-name>
+          dnx profile delete <id|name>
+          dnx login <id|name>
+          dnx launch <id|name> [workspace] [-- codex-arguments]
+
+        Environment:
+          CODEX_MULTIPLE_ACCOUNTS_ROOT  Override the profile catalog root.
+          CODEX_HOME                    Default Codex home used by profile import.
+        """);
+}

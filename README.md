@@ -41,6 +41,19 @@ dotnet build CodexMultipleAccounts.slnx
 dotnet run --project src/CodexMultipleAccounts.App
 ```
 
+`CodexMultipleAccounts.Dnx` is the separate command-line client for the shared Core
+profile and launch services. It supports profile CRUD, isolated login, and launching
+Codex in a selected workspace:
+
+```bash
+dotnet run --project src/CodexMultipleAccounts.Dnx -- profile list
+dotnet run --project src/CodexMultipleAccounts.Dnx -- profile create Personal
+dotnet run --project src/CodexMultipleAccounts.Dnx -- login Personal
+dotnet run --project src/CodexMultipleAccounts.Dnx -- launch Personal ./my-workspace
+```
+
+Use `--` after the workspace to pass additional arguments to Codex.
+
 ## Screenshot
 
 The checked-in screenshot is captured from the real Avalonia application by the Windows **App Screenshot** workflow using a deterministic demo state. The workflow also uploads the PNG as an Actions artifact and refreshes `docs/assets/app-screenshot.png` when the app UI changes.
